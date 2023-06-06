@@ -1,0 +1,15 @@
+# main dependencies
+jax
+jax-smi
+
+# utilities
+fire
+
+# testing
+torch
+transformers
+
+# param conversion
+accelerate
+sentencepiece
+protobuf~=3.20.0

@@ -4,4 +4,5 @@ from .decoder import decoder
 from .decoder_block import decoder_block
 from .dropout import dropout
 from .embedding import embedding
+from .llama import llama
 from .rms_norm import rms_norm

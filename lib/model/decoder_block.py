@@ -1,13 +1,13 @@
 from functools import partial
 import jax
 from jax import Array
-from typing import TypedDict
+from typing import NamedTuple
 
 from .attention import attention
 from .Config import Config
 from .rms_norm import rms_norm
 
-class DecoderBlock(TypedDict):
+class DecoderBlock(NamedTuple):
     input_norm: Array
     attention: Array
     post_attn_norm: Array
@@ -21,14 +21,14 @@ def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, config:
     assert isinstance(seq, Array)
 
     seq_ = seq
-    seq = rms_norm(params['input_norm'], seq, config=config)
-    seq = attention(params['attention'], seq, seq, attn_mask, config=config)
+    seq = rms_norm(params.input_norm, seq, config=config)
+    seq = attention(params.attention, seq, seq, attn_mask, config=config)
     seq += seq_
 
     seq_ = seq
-    seq = rms_norm(params['post_attn_norm'], seq, config=config)
-    ff = jax.nn.silu(seq * params['gate_proj']) + seq * params['up_proj']
-    seq = ff * params['down_proj']
+    seq = rms_norm(params.post_attn_norm, seq, config=config)
+    ff = jax.nn.silu(seq * params.gate_proj) + seq * params.up_proj
+    seq = ff * params.down_proj
     seq += seq_
 
     return seq

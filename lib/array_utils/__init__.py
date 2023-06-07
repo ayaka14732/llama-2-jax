@@ -1,7 +1,7 @@
 import torch
-import numpy as np
 from jax import Array
 import jax.numpy as jnp
+import numpy as np
 
 def jax2np(x: Array) -> np.ndarray:
     return np.asarray(x)

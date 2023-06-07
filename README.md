@@ -68,7 +68,7 @@ The format used in this project is like this:
 
 ```
 embedding: (32000, 4096)
-decoder_blocks: 32 x decoder_block
+decoder: 32 x decoder_block
   input_norm: (4096)
   attention
     q_proj: (4096, 32, 128)

@@ -6,10 +6,10 @@ from typing import List
 from .Config import Config
 from .decoder_block import DecoderBlock, decoder_block
 
-DecoderBlocks = List[DecoderBlock]
+Decoder = List[DecoderBlock]
 
 @partial(jax.jit, static_argnames=('config',))
-def decoder_blocks(params: DecoderBlocks, dst_seq: Array, *, config: Config):
+def decoder(params: Decoder, dst_seq: Array, *, config: Config):
     assert isinstance(params, List)
     assert len(params) == config['n_layers']
     assert isinstance(dst_seq, Array)

@@ -68,16 +68,16 @@ The format used in this project is like this:
 
 ```
 embedding: (32000, 4096)
-replicate: 32 x decoder_block
+decoder_blocks: 32 x decoder_block
   input_norm: (4096)
-  attn
+  attention
     q_proj: (4096, 32, 128)
     k_proj: (4096, 32, 128)
     v_proj: (4096, 32, 128)
     out_proj: (32, 128, 4096)
   post_attn_norm: (4096)
-  gate: (4096, 11008)
-  up: (4096, 11008)
-  down: (11008, 4096)
+  gate_proj: (4096, 11008)
+  up_proj: (4096, 11008)
+  down_proj: (11008, 4096)
 norm: (4096)
 ```

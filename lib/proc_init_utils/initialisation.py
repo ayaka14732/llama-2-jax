@@ -12,15 +12,11 @@ def _find_free_port() -> int:
 def _post_init_general() -> None:
     # post-init flags
     import jax
-    jax.config.update('jax_array', True)
     jax.config.update('jax_enable_custom_prng', True)
     jax.config.update('jax_default_prng_impl', 'rbg')
     jax.config.update('jax_default_matmul_precision', jax.lax.Precision.HIGHEST)
 
-def initialise_cpu(n_devices: int | None=None) -> None:
-    if n_devices is None:
-        n_devices = 1
-
+def initialise_cpu(n_devices: int=1) -> None:
     os.environ['JAX_PLATFORMS'] = 'cpu'
     os.environ['XLA_FLAGS'] = os.environ.get('XLA_FLAGS', '') + ' --xla_force_host_platform_device_count=' + str(n_devices)
 

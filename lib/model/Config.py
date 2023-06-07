@@ -1,6 +1,6 @@
-from typing import TypedDict
+from typing import NamedTuple
 
-class Config(TypedDict):
+class Config(NamedTuple):
     d_k: int
     d_model: int
     d_v: int
@@ -9,12 +9,12 @@ class Config(TypedDict):
     n_layers: int
     vocab_size: int
 
-_config: Config = {
-    'd_k': 128,
-    'd_model': 4096,
-    'd_v': 128,
-    'dropout_rate': 0.1,
-    'n_heads': 32,
-    'n_layers': 32,
-    'vocab_size': 32000,
-}
+config_7B = Config(
+    d_k=128,
+    d_model=4096,
+    d_v=128,
+    dropout_rate=0.1,
+    n_heads=32,
+    n_layers=32,
+    vocab_size=32000,
+)

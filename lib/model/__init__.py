@@ -1,5 +1,5 @@
 from .attention import attention
-from .Config import Config
+from .Config import Config, config_7B
 from .decoder import decoder
 from .decoder_block import decoder_block
 from .dropout import dropout

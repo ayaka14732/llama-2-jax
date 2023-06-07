@@ -9,7 +9,7 @@ from .Config import Config
 def embedding(params: Array, x: Array, *, config: Config) -> Array:
     assert isinstance(params, Array)
     assert params.dtype == jnp.uint16
-    assert params.shape == (config['vocab_size'], config['d_model'])
+    assert params.shape == (config.vocab_size, config.d_model)
 
     y = params[x]
     return y

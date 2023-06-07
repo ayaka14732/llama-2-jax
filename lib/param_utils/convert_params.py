@@ -7,7 +7,7 @@ from transformers import LlamaModel
 # with torch.no_grad():
 #     params = {}
 
-#     params['embedding'] = jnp.asarray(model.embed_tokens.weight.numpy())
+#     params['embedding'] = model.embed_tokens.weight.numpy())
 
 
 def convert_params():

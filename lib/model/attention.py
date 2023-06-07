@@ -19,10 +19,10 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
     assert isinstance(params['k_proj'], Array)
     assert isinstance(params['v_proj'], Array)
 
-    assert params['q_proj'].shape == (config['d_model'], config['n_heads'], config['d_k'])
-    assert params['k_proj'].shape == (config['d_model'], config['n_heads'], config['d_k'])
-    assert params['v_proj'].shape == (config['d_model'], config['n_heads'], config['d_v'])
-    assert params['out_proj'].shape == (config['n_heads'], config['d_v'], config['d_model'])
+    assert params['q_proj'].shape == (config.d_model, config.n_heads, config.d_k)
+    assert params['k_proj'].shape == (config.d_model, config.n_heads, config.d_k)
+    assert params['v_proj'].shape == (config.d_model, config.n_heads, config.d_v)
+    assert params['out_proj'].shape == (config.n_heads, config.d_v, config.d_model)
 
     assert isinstance(src_seq, Array)
     assert isinstance(dst_seq, Array)

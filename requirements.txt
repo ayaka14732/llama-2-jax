@@ -1,6 +1,7 @@
 # main dependencies
 jax
 jax-smi
+einops
 
 # utilities
 fire

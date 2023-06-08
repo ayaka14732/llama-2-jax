@@ -2,6 +2,8 @@
 jax
 jax-smi
 einops
+optax~=0.1.5
+flax~=0.6.10
 
 # utilities
 fire

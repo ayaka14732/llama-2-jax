@@ -3,14 +3,21 @@ from lib.proc_init_utils import initialise_cpu; initialise_cpu()
 
 import jax.numpy as jnp
 import numpy as np
+import torch
+import torch.nn as tnn
+from transformers import LlamaConfig
 from transformers.models.llama.modeling_llama import LlamaAttention
 
-from lib.array_utils import np2jax, np2pt, pt2jax
-from lib.model import config_7B, rms_norm
+from lib.array_utils import pt2jax
+from lib.model import config_7B, Attention, attention
 
-batch_size = 2
+batch_size = 1  # TODO: change to 2 to test masking
 seq_len = 9
-d_model = config_7B.d_model
-rms_norm_eps = config_7B.rms_norm_eps
 
-# TODO
+config_pt = LlamaConfig()  # default to LLaMA 7B
+
+attention_pt = LlamaAttention(config=config_pt)
+
+params_jax = convert_attention()
+
+config_7B

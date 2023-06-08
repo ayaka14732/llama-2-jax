@@ -16,5 +16,5 @@ def decoder(params: Decoder, dst_seq: Array, *, config: Config):
     assert dst_seq.shape[-1] == config.d_model
 
     for param_layer in params:
-        dst_seq = decoder_block(param_layer, dst_seq)
+        dst_seq = decoder_block(param_layer, dst_seq, config=config)
     return dst_seq

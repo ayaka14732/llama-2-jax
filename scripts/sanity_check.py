@@ -3,7 +3,7 @@ import os
 import sys
 
 def join_filenames(filenames: list[str]):
-    """
+    '''
     This function takes a list of filenames and returns a string with the filenames joined by ', ' 
     and the last one by ' and '. Each filename is enclosed in backticks.
 
@@ -15,7 +15,7 @@ def join_filenames(filenames: list[str]):
     >>> join_filenames(['abc', 'def', 'ghi'])
     '`abc`, `def` and `ghi`'
     ```
-    """
+    '''
     if len(filenames) == 0:
         return ''
     if len(filenames) == 1:

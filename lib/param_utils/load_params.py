@@ -1,6 +1,10 @@
-from flax.serialization import msgpack_restore
+import pickle
+from typing import Any
 
-def load_params(filename):
+def load_params_bytes(b: bytes) -> Any:
+    return pickle.loads(b)
+
+def load_params(filename: str) -> Any:
     with open(filename, 'rb') as f:
-        serialized_params = f.read()
-    return msgpack_restore(serialized_params)
+        params = pickle.load(f)
+    return params

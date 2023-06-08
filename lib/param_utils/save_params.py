@@ -1,6 +1,9 @@
-from flax.serialization import msgpack_serialize, msgpack_restore
+import pickle
+from typing import Any
 
-def save_params(params, filename):
-    serialized_params = msgpack_serialize(params)
+def save_params_bytes(params: Any) -> bytes:
+    return pickle.dumps(params)
+
+def save_params(params: Any, filename: str) -> None:
     with open(filename, 'wb') as f:
-        f.write(serialized_params)
+        pickle.dump(params, file=f)

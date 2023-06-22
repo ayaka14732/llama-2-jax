@@ -14,9 +14,10 @@ def make_weights(seq_len, d_k):
     return sin_val, cos_val
 
 def rotate_half(x):
-    x = op.rearrange(x, '... (i x) -> ... i x', i=2)
-    x = x[..., ::-1, :] * jnp.array([[-1], [1]])
-    x = op.rearrange(x, '... i x -> ... (i x)')
+    x = op.rearrange(x, '... (i x) -> ... i x', i=2)  # split the last dimension: (..., n) -> (..., 2, n // 2)
+    x = x[..., ::-1, :]  # reverse dimension -2
+    x = x.at[..., 0, :].multiply(-1)  # negate the first half of dimension -2
+    x = op.rearrange(x, '... i x -> ... (i x)')  # merge the last two dimensions: (..., 2, n // 2) -> (..., n)
     return x
 
 def rotary_embedding(m):

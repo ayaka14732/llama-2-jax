@@ -2,6 +2,7 @@ import einops as op
 from functools import partial
 import jax
 from jax import Array
+import jax.nn as nn
 import jax.numpy as jnp
 import math
 from typing import NamedTuple
@@ -40,6 +41,7 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
 
     qk = op.einsum(q, k, 'batch_size n_heads src_seq_len d_k, batch_size n_heads dst_seq_len d_k -> batch_size n_heads src_seq_len dst_seq_len')
     qk /= math.sqrt(config.d_k)
+    qk = nn.softmax(qk)
 
     qkv = op.einsum(qk, v, 'batch_size n_heads src_seq_len dst_seq_len, batch_size n_heads dst_seq_len d_v -> batch_size n_heads src_seq_len d_v')
 

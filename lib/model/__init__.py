@@ -6,3 +6,4 @@ from .dropout import dropout
 from .embedding import embedding
 from .llama import Llama, llama
 from .rms_norm import rms_norm
+from .rotary_embedding import rotary_embedding

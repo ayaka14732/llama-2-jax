@@ -26,4 +26,6 @@ seq_jax = pt2jax(seq_pt)
 y_pt = attention_pt(hidden_states=seq_pt, attention_mask=None)[0]
 y_jax = pt2jax(y_pt)
 y_head_jax = attention(params_jax, seq_jax, seq_jax, None, config=config_7B)
+print('y_jax', y_jax)
+print('y_head_jax', y_head_jax)
 assert jnp.allclose(y_jax, y_head_jax)

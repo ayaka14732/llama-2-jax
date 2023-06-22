@@ -3,9 +3,11 @@ from functools import partial
 import jax
 from jax import Array
 import jax.numpy as jnp
+import math
 from typing import NamedTuple
 
 from .Config import Config
+from .rotary_embedding import rotary_embedding
 
 class Attention(NamedTuple):
     q_proj: Array
@@ -26,17 +28,21 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
 
     assert isinstance(src_seq, Array)
     assert isinstance(dst_seq, Array)
-    assert isinstance(attn_mask, Array)
-    assert attn_mask.dtype == jnp.bool_
+    # assert isinstance(attn_mask, Array)
+    # assert attn_mask.dtype == jnp.bool_
 
-    q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_heads d_k -> batch_size src_seq_len n_heads d_k')
-    k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_k -> batch_size dst_seq_len n_heads d_k')
-    v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_v -> batch_size dst_seq_len n_heads d_v')
+    q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_heads d_k -> batch_size n_heads src_seq_len d_k')
+    k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_k -> batch_size n_heads dst_seq_len d_k')
+    v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_v -> batch_size n_heads dst_seq_len d_v')
 
-    qk = op.einsum(q, k, 'batch_size src_seq_len n_heads d_k, batch_size dst_seq_len n_heads d_k -> batch_size n_heads src_seq_len dst_seq_len')
+    q = rotary_embedding(q)
+    k = rotary_embedding(k)
 
-    qkv = op.einsum(qk, v, 'batch_size n_heads src_seq_len dst_seq_len, batch_size dst_seq_len n_heads d_v -> batch_size src_seq_len n_heads d_v')
+    qk = op.einsum(q, k, 'batch_size n_heads src_seq_len d_k, batch_size n_heads dst_seq_len d_k -> batch_size n_heads src_seq_len dst_seq_len')
+    qk /= math.sqrt(config.d_k)
 
-    out = op.einsum(qkv, params.out_proj, 'batch_size src_seq_len n_heads d_v, n_heads d_v d_model -> batch_size src_seq_len d_model')
+    qkv = op.einsum(qk, v, 'batch_size n_heads src_seq_len dst_seq_len, batch_size n_heads dst_seq_len d_v -> batch_size n_heads src_seq_len d_v')
+
+    out = op.einsum(qkv, params.out_proj, 'batch_size n_heads src_seq_len d_v, n_heads d_v d_model -> batch_size src_seq_len d_model')
 
     return out

@@ -13,10 +13,10 @@ def make_weights(seq_len, d_k):
     cos_val = op.repeat(cos_val, 'seq_len d_k -> seq_len (i d_k)', i=2)
     return sin_val, cos_val
 
-def rotate_every_two(x):
-    x = op.rearrange(x, '... (x i) -> ... x i', i=2)
-    x = x[..., ::-1] * jnp.array([-1, 1])
-    x = op.rearrange(x, '... x i -> ... (x i)')
+def rotate_half(x):
+    x = op.rearrange(x, '... (i x) -> ... i x', i=2)
+    x = x[..., ::-1, :] * jnp.array([[-1], [1]])
+    x = op.rearrange(x, '... i x -> ... (i x)')
     return x
 
 def rotary_embedding(m):
@@ -27,7 +27,7 @@ def rotary_embedding(m):
     with jax.ensure_compile_time_eval():
         sin_val, cos_val = make_weights(seq_len, d_k)
 
-    n = rotate_every_two(m)
+    n = rotate_half(m)
     a = op.einsum(m, cos_val, 'batch_size n_heads seq_len d_k, seq_len d_k -> batch_size n_heads seq_len d_k')
     b = op.einsum(n, sin_val, 'batch_size n_heads seq_len d_k, seq_len d_k -> batch_size n_heads seq_len d_k')
     return a + b

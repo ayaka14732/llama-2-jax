@@ -29,8 +29,8 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
 
     assert isinstance(src_seq, Array)
     assert isinstance(dst_seq, Array)
-    # assert isinstance(attn_mask, Array)
-    # assert attn_mask.dtype == jnp.bool_
+    assert isinstance(attn_mask, Array)
+    assert attn_mask.dtype == jnp.bool_
 
     q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_heads d_k -> batch_size n_heads src_seq_len d_k')
     k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_k -> batch_size n_heads dst_seq_len d_k')
@@ -41,10 +41,11 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
 
     qk = op.einsum(q, k, 'batch_size n_heads src_seq_len d_k, batch_size n_heads dst_seq_len d_k -> batch_size n_heads src_seq_len dst_seq_len')
     qk /= math.sqrt(config.d_k)
+    qk = jnp.where(attn_mask, qk, jnp.NINF)
     qk = nn.softmax(qk)
+    qk = jnp.where(attn_mask, qk, 0)
 
     qkv = op.einsum(qk, v, 'batch_size n_heads src_seq_len dst_seq_len, batch_size n_heads dst_seq_len d_v -> batch_size n_heads src_seq_len d_v')
 
     out = op.einsum(qkv, params.out_proj, 'batch_size n_heads src_seq_len d_v, n_heads d_v d_model -> batch_size src_seq_len d_model')
-
     return out

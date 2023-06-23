@@ -1,9 +1,9 @@
-from .attention import Attention, attention
+from .attention import Attention, attention, check_attention
 from .Config import Config, config_7B
-from .decoder import decoder
-from .decoder_block import DecoderBlock, decoder_block
+from .decoder import Decoder, check_decoder, decoder
+from .decoder_block import DecoderBlock, check_decoder_block, decoder_block
 from .dropout import dropout
-from .embedding import embedding
-from .llama import Llama, llama
-from .rms_norm import rms_norm
+from .embedding import check_embedding, embedding
+from .llama import Llama, check_llama, llama
+from .rms_norm import check_rms_norm, rms_norm
 from .rotary_embedding import rotary_embedding

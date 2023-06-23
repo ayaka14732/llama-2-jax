@@ -7,7 +7,7 @@ import jax.random as rand
 from .Config import Config
 
 @partial(jax.jit, static_argnames=('config',))
-def dropout(params: Array, *, key: rand.KeyArray, config: Config) -> jnp.array:
+def dropout(params: Array, *, key: rand.KeyArray, config: Config) -> Array:
     assert 0. <= config.dropout_rate <= 1.
     assert isinstance(params, Array)
     assert isinstance(key, rand.KeyArray)

@@ -16,22 +16,19 @@ class Attention(NamedTuple):
     v_proj: Array
     out_proj: Array
 
-@partial(jax.jit, static_argnames=('config',))
-def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, config: Config) -> Array:
+def check_attention(params: Attention, *, config: Config) -> None:
     assert isinstance(params.q_proj, Array)
     assert isinstance(params.k_proj, Array)
     assert isinstance(params.v_proj, Array)
+    assert isinstance(params.out_proj, Array)
 
     assert params.q_proj.shape == (config.d_model, config.n_heads, config.d_k)
     assert params.k_proj.shape == (config.d_model, config.n_heads, config.d_k)
     assert params.v_proj.shape == (config.d_model, config.n_heads, config.d_v)
     assert params.out_proj.shape == (config.n_heads, config.d_v, config.d_model)
 
-    assert isinstance(src_seq, Array)
-    assert isinstance(dst_seq, Array)
-    assert isinstance(attn_mask, Array)
-    assert attn_mask.dtype == jnp.bool_
-
+@partial(jax.jit, static_argnames=('config',))
+def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, config: Config) -> Array:
     q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_heads d_k -> batch_size n_heads src_seq_len d_k')
     k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_k -> batch_size n_heads dst_seq_len d_k')
     v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads d_v -> batch_size n_heads dst_seq_len d_v')

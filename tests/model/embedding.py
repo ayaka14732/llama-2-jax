@@ -22,5 +22,5 @@ x_jax = pt2jax(x_pt).astype(jnp.uint16)
 
 y_pt = embedding_pt(x_pt)
 y_jax = pt2jax(y_pt)
-y_hat_jax = embedding(params_jax, x_jax, config=config_7B)
+y_hat_jax = embedding(params_jax, x_jax)
 assert jnp.allclose(y_jax, y_hat_jax)

@@ -1,15 +1,10 @@
-from functools import partial
-import jax
 from jax import Array
-import jax.numpy as jnp
 
 from .Config import Config
 
-@partial(jax.jit, static_argnames=('config',))
-def embedding(params: Array, x: Array, *, config: Config) -> Array:
+def check_embedding(params: Array, *, config: Config) -> None:
     assert isinstance(params, Array)
     assert params.shape == (config.vocab_size, config.d_model)
-    assert x.dtype == jnp.uint16
 
-    y = params[x]
-    return y
+def embedding(params: Array, x: Array) -> Array:
+    return params[x]

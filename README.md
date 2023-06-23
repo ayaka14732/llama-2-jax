@@ -8,7 +8,7 @@ This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka1
 
 ## Environment Setup
 
-This project requires at least Python 3.11, JAX 0.4.12, PyTorch 2.1.0 and Transformers 4.31.0.
+This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transformers 4.31.0.
 
 PyTorch and Transformers are needed for testing purposes.
 

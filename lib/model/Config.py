@@ -1,6 +1,7 @@
 from typing import NamedTuple
 
 class Config(NamedTuple):
+    d_ff: int
     d_k: int
     d_model: int
     d_v: int
@@ -14,6 +15,7 @@ class Config(NamedTuple):
     vocab_size: int
 
 config_7B = Config(
+    d_ff=11008,
     d_k=128,
     d_model=4096,
     d_v=128,

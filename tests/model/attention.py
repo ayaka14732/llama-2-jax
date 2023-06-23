@@ -20,7 +20,7 @@ n_heads = 2
 
 torch.manual_seed(BEST_INTEGER)
 
-config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads)  # default to LLaMA 7B
+config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads)
 config_jax = config_7B._replace(d_model=d_model, n_heads=n_heads, d_k=d_k, d_v=d_v)
 
 attention_pt = LlamaAttention(config=config_pt)

@@ -1,17 +1,14 @@
 from functools import partial
 import jax
 from jax import Array
-from typing import List
 
 from .Config import Config
 from .decoder_block import DecoderBlock, check_decoder_block, decoder_block
 
-Decoder = List[DecoderBlock]
+Decoder = list[DecoderBlock]
 
 def check_decoder(params: Decoder, *, config: Config) -> None:
-    assert isinstance(params, List)
     assert len(params) == config.n_layers
-
     for params_layer in params:
         assert isinstance(params_layer, DecoderBlock)
         check_decoder_block(params_layer, config=config)

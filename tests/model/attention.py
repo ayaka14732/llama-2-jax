@@ -42,11 +42,11 @@ mask_pt = torch.where(mask_pt, 0, -10000.)
 
 y_pt = attention_pt(hidden_states=seq_pt, attention_mask=mask_pt)[0]
 y_jax = pt2jax(y_pt)
-y_head_jax = attention(params_jax, seq_jax, seq_jax, mask_jax, config=config_jax)
+y_hat_jax = attention(params_jax, seq_jax, seq_jax, mask_jax, config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
-y_head_jax = jnp.where(mask_jax_1d[..., None], y_head_jax, 0.)
+y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)
 
 print('y_jax', y_jax.reshape(-1)[:30])
-print('y_head_jax', y_head_jax.reshape(-1)[:30])
-assert jnp.allclose(y_jax, y_head_jax)
+print('y_hat_jax', y_hat_jax.reshape(-1)[:30])
+assert jnp.allclose(y_jax, y_hat_jax)

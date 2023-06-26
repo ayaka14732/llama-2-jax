@@ -33,7 +33,7 @@ def convert_decoder_block(x, *, config: Config) -> DecoderBlock:
     down_proj = convert_proj(x.mlp.down_proj)
     return DecoderBlock(input_norm=input_norm, attention=attention, post_attn_norm=post_attn_norm, gate_proj=gate_proj, up_proj=up_proj, down_proj=down_proj)
 
-def convert_params(model_pt: LlamaModel, *, config: Config) -> Llama:
+def convert_llama(model_pt: LlamaModel, *, config: Config) -> Llama:
     with torch.no_grad():
         embedding = pt2jax(model_pt.embed_tokens.weight)
         decoder = [convert_decoder_block(model_pt.layers[i], config=config) for i in range(config.n_layers)]

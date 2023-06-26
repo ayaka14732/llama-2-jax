@@ -34,7 +34,7 @@ def llama(params: Llama, seq: Array, attn_mask: Array, *, config=Config) -> Arra
     # assert isinstance(attn_mask, Array)
     # assert attn_mask.dtype == jnp.bool_
     # assert isinstance(seq, Array)
-    # assert x.dtype == jnp.uint16
+    assert seq.dtype == jnp.uint16
     # assert d_k % 2 == 0
 
     attn_mask = jnp.tril(jnp.einsum('bi,bj->bij', attn_mask, attn_mask))[:, None]

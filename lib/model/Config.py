@@ -5,7 +5,7 @@ class Config(NamedTuple):
     d_k: int
     d_model: int
     d_v: int
-    dropout_rate: int
+    dropout_rate: float
     n_heads: int
     n_layers: int
     rms_norm_eps: float

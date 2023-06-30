@@ -1,40 +1,16 @@
-from functools import partial
-import jax
 from jax import Array
-import jax.numpy as jnp
 from typing import NamedTuple
 
 from .Config import Config
-from .decoder import Decoder, check_decoder, decoder
-from .embedding import check_embedding, embedding
-from .rms_norm import check_rms_norm, rms_norm
+from .llama_model import LlamaModel, check_llama_model
 
 class Llama(NamedTuple):
-    embedding: Array
-    decoder: Decoder
-    norm: Array
+    model: LlamaModel
+    lm_head: Array
 
 def check_llama(params: Llama, *, config: Config) -> None:
-    assert isinstance(params.embedding, Array)
-    assert isinstance(params.decoder, list)
-    assert isinstance(params.norm, Array)
+    assert isinstance(params.model, LlamaModel)
+    assert isinstance(params.lm_head, Array)
 
-    check_embedding(params.embedding, config=config)
-    check_decoder(params.decoder, config=config)
-    check_rms_norm(params.norm, config=config)
-
-@partial(jax.jit, static_argnames=('config',))
-def llama(params: Llama, seq: Array, attn_mask: Array, *, config: Config) -> Array:
-    assert isinstance(seq, Array)
-    assert isinstance(attn_mask, Array)
-    assert seq.dtype == jnp.uint16
-    assert attn_mask.dtype == jnp.bool_
-    assert seq.shape == attn_mask.shape
-    assert config.d_k % 2 == 0
-
-    attn_mask = jnp.tril(jnp.einsum('bi,bj->bij', attn_mask, attn_mask))[:, None]
-
-    seq = embedding(params.embedding, seq)
-    seq = decoder(params.decoder, seq, attn_mask, config=config)
-    seq = rms_norm(params.norm, seq, config=config)
-    return seq
+    check_llama_model(params.model, config=config)
+    assert params.lm_head.shape == (config.d_model, config.vocab_size)

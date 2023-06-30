@@ -2,6 +2,7 @@
 jax
 jax-smi
 einops
+flax
 optax
 
 # utilities

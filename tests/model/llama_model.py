@@ -6,8 +6,8 @@ import torch
 from transformers import LlamaConfig, LlamaModel
 
 from lib.array_utils import pt2jax
-from lib.model import check_llama, config_7B, llama
-from lib.param_utils import convert_llama
+from lib.model import check_llama_model, config_7B, llama_model
+from lib.param_utils import convert_llama_model
 from lib.seeding import BEST_INTEGER
 
 batch_size = 2
@@ -26,8 +26,8 @@ config_pt = LlamaConfig(vocab_size=vocab_size, hidden_size=d_model, num_attentio
 config_jax = config_7B._replace(d_model=d_model, n_heads=n_heads, d_k=d_k, d_v=d_v, d_ff=d_ff, vocab_size=vocab_size)
 
 llama_pt = LlamaModel(config=config_pt)
-params_jax = convert_llama(llama_pt, config=config_jax)
-check_llama(params_jax, config=config_jax)
+params_jax = convert_llama_model(llama_pt, config=config_jax)
+check_llama_model(params_jax, config=config_jax)
 
 # initialise input sequence
 seq_pt = (torch.rand(batch_size, seq_len) * config_jax.vocab_size).to(torch.int32)
@@ -38,7 +38,7 @@ mask_jax_1d = pt2jax(mask_pt_1d)
 
 y_pt = llama_pt(input_ids=seq_pt, attention_mask=mask_pt_1d)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = llama(params_jax, seq_jax, mask_jax_1d, config=config_jax)
+y_hat_jax = llama_model(params_jax, seq_jax, mask_jax_1d, config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

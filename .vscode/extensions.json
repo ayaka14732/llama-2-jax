@@ -1,8 +1,9 @@
 {
     "recommendations": [
-        "streetsidesoftware.code-spell-checker",
-        "ms-python.python",
         "eamodio.gitlens",
+        "matangover.mypy",
+        "ms-python.python",
+        "streetsidesoftware.code-spell-checker",
         "tyriar.sort-lines",
         "znck.grammarly"
     ]

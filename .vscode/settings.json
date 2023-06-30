@@ -27,5 +27,6 @@
         "vocab",
         "vstack",
         "wandb"
-    ]
+    ],
+    "mypy.runUsingActiveInterpreter": true
 }

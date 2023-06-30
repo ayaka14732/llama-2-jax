@@ -24,7 +24,7 @@ def check_llama(params: Llama, *, config: Config) -> None:
     check_rms_norm(params.norm, config=config)
 
 @partial(jax.jit, static_argnames=('config',))
-def llama(params: Llama, seq: Array, attn_mask: Array, *, config=Config) -> Array:
+def llama(params: Llama, seq: Array, attn_mask: Array, *, config: Config) -> Array:
     assert isinstance(seq, Array)
     assert isinstance(attn_mask, Array)
     assert seq.dtype == jnp.uint16

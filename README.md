@@ -1,14 +1,23 @@
 # JAX Implementation of LLaMA
 
-This project is still in progress. Please check it out in the next week.
-
 This project is a JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461). This project aims to train LLaMA on Google Cloud TPU.
 
 This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 
+## Features
+
+- [x] Parameter conversion
+- [x] Model architecture
+- [x] Testing model architecture
+- [ ] More rigorous testing of model architecture
+- [ ] Generation
+- [ ] Distributed and parallel inference
+- [ ] Dataloader
+- [ ] Distributed and parallel training
+
 ## Environment Setup
 
-This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transformers 4.31.0.
+This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transformers 4.31.0.dev0.
 
 PyTorch and Transformers are needed for testing purposes.
 
@@ -33,6 +42,12 @@ pip install -r requirements.txt
 | 65B | | 80 | 64 | 8192 | |
 
 \* The model name is 30B, but the actual model size is 33B.
+
+## Usage
+
+```sh
+python scripts/convert_params_runner.py
+```
 
 ## Model Architecture
 

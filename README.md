@@ -4,7 +4,7 @@ This project is a well-crafted JAX implementation of [LLaMA](https://arxiv.org/a
 
 This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 
-# Motivation
+## Motivation
 
 The objectives of this project are threefold:
 
@@ -43,6 +43,15 @@ pip install git+https://github.com/huggingface/transformers.git
 pip install -r requirements.txt
 ```
 
+## Usage
+
+```sh
+(cd .. && git clone https://github.com/huggingface/transformers.git)
+python ../transformers/src/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir /path/to/downloaded/llama/weights --model_size 7B --output_dir ../llama-weights
+python scripts/convert_params_runner.py
+python generate.py
+```
+
 ## Model Configurations
 
 | Name | Parameters | `n_layers` | `n_heads` | `d_model`| `d_ff` |
@@ -53,13 +62,6 @@ pip install -r requirements.txt
 | 65B | | 80 | 64 | 8192 | |
 
 \* The model name is 30B, but the actual model size is 33B.
-
-## Usage
-
-```sh
-python scripts/convert_params_runner.py
-python generate.py
-```
 
 ## Model Architecture
 

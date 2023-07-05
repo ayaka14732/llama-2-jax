@@ -1,6 +1,8 @@
 # JAX Implementation of LLaMA
 
-This project is a well-crafted JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461).
+This project is the JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461).
+
+This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
 
 This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 
@@ -12,16 +14,17 @@ The objectives of this project are threefold:
 - Develop a high-quality codebase that serves as an exemplary implementation of the Transformer model using JAX;
 - Facilitate the identification of common errors and inconsistencies across various transformer models through the implementation of a high-quality codebase, thereby providing valuable insights for the NLP community.
 
-## Features
+## Roadmap
 
 - [x] Parameter conversion
 - [x] Model architecture
-- [x] Testing model architecture
+- [x] Testing of model architecture
 - [ ] More rigorous testing of model architecture
 - [ ] Generation
     - [ ] Beam search
     - [x] Top-_k_ sampling
-    - [ ] Top-_p_ sampling
+    - [x] Top-_p_ sampling
+    - [ ] Configurations (`presence_penalty`, `frequency_penalty`, etc.)
 - [ ] Distributed and parallel inference
 - [ ] Dataloader
 - [ ] Distributed and parallel training

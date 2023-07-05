@@ -8,6 +8,7 @@ from transformers import LlamaTokenizer
 
 # from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
+from lib.model import config_7B
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER
 
@@ -32,8 +33,8 @@ def main() -> None:
     attn_mask = inputs.attention_mask.astype(jnp.bool_)
 
     key, subkey = rand.split(key)
-    # generated_seq = top_k(params, seq, attn_mask, key=subkey, config=top_k_config)
-    generated_seq = top_p(params, seq, attn_mask, key=subkey, config=top_p_config)
+    # generated_seq = top_k(params, seq, attn_mask, key=subkey, model_config=config_7B, top_k_config=top_k_config)
+    generated_seq = top_p(params, seq, attn_mask, key=subkey, model_config=config_7B, top_p_config=top_p_config)
     decoded_texts = tokenizer.batch_decode(generated_seq, skip_special_tokens=True)
 
     for decoded_text in decoded_texts:

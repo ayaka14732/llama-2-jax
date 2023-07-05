@@ -5,7 +5,7 @@ import jax.random as rand
 from operator import getitem
 from typing import NamedTuple
 
-from ..model import config_7B, Llama, llama_model  # TODO generalise `config_7B`
+from ..model import Config, Llama, llama_model
 from ._utils import while_loop
 
 class _TopKGenerationState(NamedTuple):
@@ -21,11 +21,11 @@ class TopKGenerationConfig(NamedTuple):
     max_length: int
     top_k: int
 
-def _loop_body_top_k(params: Llama, state: _TopKGenerationState, config: TopKGenerationConfig) -> _TopKGenerationState:
+def _loop_body_top_k(params: Llama, state: _TopKGenerationState, model_config: Config, top_k_config: TopKGenerationConfig) -> _TopKGenerationState:
     key, seq, attn_mask, last_positions, last_tokens, finished = state
-    eos_token_id, max_length, top_k = config
+    eos_token_id, max_length, top_k = top_k_config
 
-    outputs = llama_model(params.model, seq, attn_mask, config=config_7B)
+    outputs = llama_model(params.model, seq, attn_mask, config=model_config)
     logits = jax.vmap(getitem)(outputs, last_positions) @ params.lm_head
 
     values, indices = jax.lax.top_k(logits, k=top_k)
@@ -45,11 +45,14 @@ def _loop_body_top_k(params: Llama, state: _TopKGenerationState, config: TopKGen
 
     return _TopKGenerationState(key, seq, attn_mask, current_positions, current_tokens, finished)
 
-def top_k(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, config: TopKGenerationConfig) -> Array:
+def top_k(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: Config, top_k_config: TopKGenerationConfig) -> Array:
+    assert top_k_config.top_k > 0
+
     last_positions = jnp.argmin(attn_mask, axis=-1) - 1
     last_tokens = jax.vmap(getitem)(seq, last_positions)  # type: ignore[call-overload]
     finished = jnp.all(attn_mask, axis=-1)
-    loop_body = lambda state: _loop_body_top_k(params, state, config)
+    loop_body = lambda state: _loop_body_top_k(params, state, model_config, top_k_config)
     state = _TopKGenerationState(key, seq, attn_mask, last_positions, last_tokens, finished)
+
     state = while_loop((lambda state: ~jnp.all(state.finished)), loop_body, state)
     return state.seq

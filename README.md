@@ -16,17 +16,28 @@ The objectives of this project are threefold:
 
 ## Roadmap
 
-- [x] Parameter conversion
+- [x] [Parameter conversion](lib/param_utils/convert_params.py)
 - [x] Model architecture
+    - [x] [Dropout](lib/model/dropout.py)
+    - [x] [RMS Norm](lib/model/rms_norm.py)
+    - [x] [Embedding](lib/model/embedding.py)
+    - [x] [Rotary embedding](lib/model/rotary_embedding.py)
+    - [x] [Attention](lib/model/attention.py)
+    - [x] [Decoder block](lib/model/decoder_block.py)
+    - [x] [Decoder](lib/model/decoder.py)
+    - [x] [LLaMA Model](lib/model/llama_model.py)
 - [x] Testing of model architecture
 - [ ] More rigorous testing of model architecture
+- [x] Logits processing
+    - [x] [Bias](lib/logits_processing/bias.py)
+    - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
+    - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
     - [ ] Beam search
-    - [x] Top-_k_ sampling
-    - [x] Top-_p_ sampling
-    - [ ] Configurations (`presence_penalty`, `frequency_penalty`, etc.)
-- [ ] Distributed and parallel inference
+    - [x] [Top-_k_ sampling](lib/generation/top_k.py)
+    - [x] [Top-_p_ sampling](lib/generation/top_p.py)
 - [ ] Dataloader
+- [ ] Distributed and parallel inference
 - [ ] Distributed and parallel training
 
 ## Environment Setup

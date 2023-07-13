@@ -26,17 +26,16 @@ The objectives of this project are threefold:
     - [x] [Decoder block](lib/model/decoder_block.py)
     - [x] [Decoder](lib/model/decoder.py)
     - [x] [LLaMA Model](lib/model/llama_model.py)
-- [x] Testing of model architecture
-- [ ] More rigorous testing of model architecture
 - [x] Logits processing
     - [x] [Bias](lib/logits_processing/bias.py)
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
     - [ ] Beam search
+    - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
-- [ ] Dataloader
+- [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [ ] Distributed and parallel inference
 - [ ] Distributed and parallel training
 
@@ -44,7 +43,7 @@ The objectives of this project are threefold:
 
 This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transformers 4.31.0.dev0.
 
-PyTorch and Transformers are needed for testing purposes.
+PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 
 ```sh
 python3.11 -m venv venv

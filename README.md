@@ -26,6 +26,7 @@ The objectives of this project are threefold:
     - [x] [Decoder block](lib/model/decoder_block.py)
     - [x] [Decoder](lib/model/decoder.py)
     - [x] [LLaMA Model](lib/model/llama_model.py)
+- [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
 - [x] Logits processing
     - [x] [Bias](lib/logits_processing/bias.py)
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)

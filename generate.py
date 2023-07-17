@@ -1,5 +1,6 @@
 # from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent))
-from lib.proc_init_utils import initialise_tpu; initialise_tpu('v4-16', n_devices=1, rank=0)
+# from lib.proc_init_utils import initialise_tpu; initialise_tpu('v4-16', n_devices=1, rank=0)
+from lib.proc_init_utils import initialise_gpu; initialise_gpu()
 
 import jax.numpy as jnp
 import jax.random as rand
@@ -12,7 +13,7 @@ from lib.model import config_7B
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER
 
-tokenizer = LlamaTokenizer.from_pretrained('../llama-weights')
+tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/7B')
 tokenizer.pad_token = tokenizer.eos_token  # TODO: verify this
 sentences = [
     'I believe the meaning of life is',

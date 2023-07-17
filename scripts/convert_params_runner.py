@@ -6,7 +6,7 @@ from transformers import LlamaForCausalLM
 from lib.model import check_llama, config_7B
 from lib.param_utils import convert_llama, save_params
 
-model_pt = LlamaForCausalLM.from_pretrained('../llama-weights/converted/7B')
+model_pt = LlamaForCausalLM.from_pretrained('../llama-weights/7B')
 params = convert_llama(model_pt, config=config_7B)
 check_llama(params, config=config_7B)
 save_params(params, '7B.pickle')

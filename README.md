@@ -45,23 +45,57 @@ This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transf
 
 PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 
+### Create `venv`
+
 ```sh
 python3.11 -m venv venv
 . venv/bin/activate
 pip install -U pip
 pip install -U wheel
+```
+
+### Install the proper version of JAX
+
+CUDA 11.8:
+
+```sh
+pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
+
+TPU:
+
+```sh
 pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
+```
+
+### Install other dependencies
+
+```sh
 pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
 pip install git+https://github.com/huggingface/transformers.git
 pip install -r requirements.txt
 ```
 
-## Usage
+### Download LLaMA weights
+
+If you couldn't obtain the LLaMA weights, you can download them with [shawwn/llama-dl](https://github.com/shawwn/llama-dl).
+
+```sh
+mkdir ../llama-weights-original && cd ../llama-weights-original
+curl -o- https://raw.githubusercontent.com/shawwn/llama-dl/56f50b96072f42fb2520b1ad5a1d6ef30351f23c/llama.sh | bash
+```
+
+### Convert parameters
 
 ```sh
 (cd .. && git clone https://github.com/huggingface/transformers.git)
-python ../transformers/src/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir /path/to/downloaded/llama/weights --model_size 7B --output_dir ../llama-weights
+python ../transformers/src/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-weights-original --model_size 7B --output_dir ../llama-weights/7B
 python scripts/convert_params_runner.py
+```
+
+### Test generation
+
+```sh
 python generate.py
 ```
 

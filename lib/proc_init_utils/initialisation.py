@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 def _find_free_port() -> int:
     import socket
@@ -19,6 +20,15 @@ def _post_init_general() -> None:
 def initialise_cpu(n_devices: int=1) -> None:
     os.environ['JAX_PLATFORMS'] = 'cpu'
     os.environ['XLA_FLAGS'] = os.environ.get('XLA_FLAGS', '') + ' --xla_force_host_platform_device_count=' + str(n_devices)
+
+    _post_init_general()
+
+def initialise_gpu(cuda_visible_devices: Optional[str]=None) -> None:
+    os.environ['JAX_PLATFORMS'] = ''
+    os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'  # Fixes https://github.com/google/jax/issues/10461#issuecomment-1121113614
+
+    if cuda_visible_devices is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
 
     _post_init_general()
 

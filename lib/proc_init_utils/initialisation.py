@@ -47,8 +47,8 @@ def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int 
         elif n_devices == 4:
             os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '2,2,1'
             os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
-            if rank != 1:
-                raise ValueError('Rank must be 1.')
+            if rank != 0:
+                raise ValueError('Rank must be 0.')
             os.environ['TPU_VISIBLE_DEVICES'] = '0,1,2,3'
         elif n_devices == 8 or n_devices is None:
             pass

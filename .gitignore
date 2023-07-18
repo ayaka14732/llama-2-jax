@@ -1,4 +1,5 @@
 /venv
+/wandb
 __pycache__
 *.pickle
 /1.py

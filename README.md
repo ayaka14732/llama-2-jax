@@ -1,3 +1,7 @@
+Updates: the new Llama 2 model is being developed on the [dev](https://github.com/ayaka14732/llama-2-jax/tree/dev) branch.
+
+---
+
 # JAX Implementation of LLaMA
 
 This project is the JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461).

@@ -31,6 +31,7 @@ def llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, config: Con
     assert attn_mask.dtype == jnp.bool_
     assert seq.shape == attn_mask.shape
     assert config.d_k % 2 == 0
+    assert config.n_heads_kv * config.n_rep_kv == config.n_heads_q
 
     attn_mask = jnp.tril(jnp.einsum('bi,bj->bij', attn_mask, attn_mask))[:, None]
 

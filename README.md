@@ -1,6 +1,6 @@
-# JAX Implementation of LLaMA
+# JAX Implementation of Llama 2
 
-This project is the JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461).
+This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461).
 
 This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
 
@@ -10,7 +10,7 @@ This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka1
 
 The objectives of this project are threefold:
 
-- Implement the LLaMA model using JAX to enable efficient training and inference on Google Cloud TPU;
+- Implement the Llama 2 model using JAX to enable efficient training and inference on Google Cloud TPU;
 - Develop a high-quality codebase that serves as an exemplary implementation of the Transformer model using JAX;
 - Facilitate the identification of common errors and inconsistencies across various transformer models through the implementation of a high-quality codebase, thereby providing valuable insights for the NLP community.
 
@@ -79,12 +79,7 @@ pip install -r requirements.txt
 
 ### Download LLaMA weights
 
-If you couldn't obtain the LLaMA weights, you can download them with [shawwn/llama-dl](https://github.com/shawwn/llama-dl).
-
-```sh
-mkdir ../llama-weights-original && cd ../llama-weights-original
-curl -o- https://raw.githubusercontent.com/shawwn/llama-dl/56f50b96072f42fb2520b1ad5a1d6ef30351f23c/llama.sh | bash
-```
+You can request to access the Llama weights from [the official website](https://ai.meta.com/llama/).
 
 ### Convert parameters
 
@@ -102,14 +97,11 @@ python generate.py
 
 ## Model Configurations
 
-| Name | Parameters | `n_layers` | `n_heads` | `d_model`| `d_ff` |
-| :-: | :-: | :-: | :-: | :-: | :-: |
-| 7B | 6,607,343,616 | 32 | 32 | 4096 | 11008 |
-| 13B | | 40 | 40 | 5120 | |
-| 30B* | | 60 | 52 | 6656 | |
-| 65B | | 80 | 64 | 8192 | |
-
-\* The model name is 30B, but the actual model size is 33B.
+| Name | Parameters | `n_layers` | `n_heads_q` | `n_rep_kv` | `d_model`| `d_ff` |
+| :-: | :-: | :-: | :-: | :-: | :-: | :-: |
+| 7B |  | 32 | 32 | 1 | 4096 | 11008 |
+| 13B | | 40 | 40 | 1 | 5120 | |
+| 70B | | 80 | 64 | | 8192 | |
 
 ## Model Architecture
 
@@ -152,10 +144,10 @@ model
   decoder: 32 x decoder_block
     input_norm: (4096)
     attention
-      q_proj: (4096, 32, 128)
+      q_proj: (4096, 1, 32, 128)
       k_proj: (4096, 32, 128)
       v_proj: (4096, 32, 128)
-      out_proj: (32, 128, 4096)
+      out_proj: (1, 32, 128, 4096)
     post_attn_norm: (4096)
     gate_proj: (4096, 11008)
     up_proj: (4096, 11008)

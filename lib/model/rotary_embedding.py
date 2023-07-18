@@ -28,6 +28,6 @@ def rotary_embedding(m: Array) -> Array:
         sin_val, cos_val = make_weights(seq_len, d_k)
 
     n = rotate_half(m)
-    a = op.einsum(m, cos_val, 'batch_size n_heads seq_len d_k, seq_len d_k -> batch_size n_heads seq_len d_k')
-    b = op.einsum(n, sin_val, 'batch_size n_heads seq_len d_k, seq_len d_k -> batch_size n_heads seq_len d_k')
+    a = op.einsum(m, cos_val, 'batch_size n_rep n_heads_kv seq_len d_k, seq_len d_k -> batch_size n_rep n_heads_kv seq_len d_k')
+    b = op.einsum(n, sin_val, 'batch_size n_rep n_heads_kv seq_len d_k, seq_len d_k -> batch_size n_rep n_heads_kv seq_len d_k')
     return a + b

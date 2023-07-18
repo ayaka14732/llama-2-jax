@@ -6,8 +6,10 @@ class Config(NamedTuple):
     d_model: int
     d_v: int
     dropout_rate: float
-    n_heads: int
+    n_heads_kv: int
+    n_heads_q: int
     n_layers: int
+    n_rep_kv: int
     rms_norm_eps: float
     token_id_bos: int
     token_id_eos: int
@@ -20,8 +22,10 @@ config_7B = Config(
     d_model=4096,
     d_v=128,
     dropout_rate=0.1,
-    n_heads=32,
+    n_heads_kv=32,
+    n_heads_q=32,
     n_layers=32,
+    n_rep_kv=1,
     rms_norm_eps=1e-6,
     token_id_bos=1,
     token_id_eos=2,

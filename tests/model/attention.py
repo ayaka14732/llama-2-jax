@@ -16,12 +16,12 @@ seq_len = 7
 d_model = 20
 d_k = 10
 d_v = 10
-n_heads = 2
+n_heads_q = 2
 
 torch.manual_seed(BEST_INTEGER)
 
-config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads)
-config_jax = config_7B._replace(d_model=d_model, n_heads=n_heads, d_k=d_k, d_v=d_v)
+config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads_q)
+config_jax = config_7B._replace(d_model=d_model, n_heads_q=n_heads_q, d_k=d_k, d_v=d_v)
 
 attention_pt = LlamaAttention(config=config_pt)
 params_jax = convert_attention(attention_pt, config=config_jax)

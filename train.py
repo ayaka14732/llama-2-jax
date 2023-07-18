@@ -3,7 +3,7 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
-import jax_smi
+# import jax_smi
 import optax
 import time
 from transformers import LlamaTokenizer
@@ -48,7 +48,7 @@ def main() -> None:
     initialise_gpu(cuda_visible_devices='2')  # 0,1,2,3
     wandb.init(project='llama-finetuning-gsm')
     print(wandb.run.name)  # type: ignore
-    jax_smi.initialise_tracking()
+    # jax_smi.initialise_tracking()
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/7B')

@@ -1,4 +1,4 @@
-Updates: the new Llama 2 model is being developed on the [dev](https://github.com/ayaka14732/llama-2-jax/tree/dev) branch.
+Updates: the new Llama 2 model is being developed on the [dev](https://github.com/ayaka14732/llama-2-jax/tree/dev) branch. (See [PR](https://github.com/ayaka14732/llama-2-jax/pull/1/files))
 
 ---
 
@@ -7,6 +7,8 @@ Updates: the new Llama 2 model is being developed on the [dev](https://github.co
 This project is the JAX implementation of [LLaMA](https://arxiv.org/abs/1910.13461).
 
 This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
+
+This project is a direct fork of [ayaka14732/llama-jax](https://github.com/ayaka14732/llama-jax).
 
 This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 

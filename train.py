@@ -39,13 +39,13 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.0023
-    batch_size = 1
+    lr = 0.002
+    batch_size = 32
     max_len = 512
     n_epochs = 8
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='0')  # 0,1,2,3
+    initialise_gpu(cuda_visible_devices='2')  # 0,1,2,3
     wandb.init(project='llama-finetuning-gsm')
     print(wandb.run.name)  # type: ignore
     jax_smi.initialise_tracking()

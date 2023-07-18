@@ -86,6 +86,12 @@ mkdir ../llama-weights-original && cd ../llama-weights-original
 curl -o- https://raw.githubusercontent.com/shawwn/llama-dl/56f50b96072f42fb2520b1ad5a1d6ef30351f23c/llama.sh | bash
 ```
 
+### Download dataset
+
+```sh
+cd .. && git clone --depth=1 https://github.com/openai/grade-school-math.git
+```
+
 ### Convert parameters
 
 ```sh
@@ -99,6 +105,7 @@ python scripts/convert_params_runner.py
 ```sh
 python generate.py
 ```
+
 
 ## Model Configurations
 

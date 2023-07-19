@@ -23,7 +23,7 @@ def initialise_cpu(n_devices: int=1) -> None:
 
     _post_init_general()
 
-def initialise_gpu(cuda_visible_devices: Optional[str]=None, preallocate_fraction: float=0.95) -> None:
+def initialise_gpu(cuda_visible_devices: Optional[str]=None, preallocate_fraction: float=0.98) -> None:
     os.environ['JAX_PLATFORMS'] = ''
     os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION'] = str(preallocate_fraction)
 

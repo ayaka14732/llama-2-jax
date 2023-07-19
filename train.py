@@ -54,7 +54,7 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    params = load_params('llama2-7B.pickle')
+    params = load_params('llama2-7B-float16.pickle')
 
     optimizer = optax.adafactor(learning_rate=lr)
     optimize = optimizer.update

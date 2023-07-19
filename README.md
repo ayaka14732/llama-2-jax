@@ -4,7 +4,7 @@ This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.1
 
 This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
 
-This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
+This project is a direct fork of [ayaka14732/llama-jax](https://github.com/ayaka14732/llama-jax), which is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 
 ## Motivation
 

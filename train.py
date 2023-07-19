@@ -3,6 +3,7 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
+import jax_smi
 import optax
 import time
 from transformers import LlamaTokenizer
@@ -47,6 +48,7 @@ def main() -> None:
 
     initialise_tpu('v4-16', n_devices=1, rank=0)
     wandb.init(project='llama-finetuning-gsm')
+    jax_smi.initialise_tracking()
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')

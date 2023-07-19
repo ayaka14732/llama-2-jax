@@ -40,12 +40,12 @@ def main() -> None:
     global optimize
 
     lr = 0.002
-    batch_size = 1
+    batch_size = 6
     max_len = 640
     n_epochs = 3
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='1', preallocate_fraction=0.98)  # 0,1,2,3
+    initialise_gpu(cuda_visible_devices='1', preallocate_fraction=0.1)  # 0,1,2,3
     wandb.init(project='llama-finetuning-gsm')
     key = rand.PRNGKey(seed)
 

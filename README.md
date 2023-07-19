@@ -81,6 +81,12 @@ pip install -r requirements.txt
 
 You can request to access the Llama weights from [the official website](https://ai.meta.com/llama/).
 
+### Download dataset
+
+```sh
+cd .. && git clone --depth=1 https://github.com/openai/grade-school-math.git
+```
+
 ### Convert parameters
 
 ```sh
@@ -94,6 +100,7 @@ python scripts/convert_params_runner.py
 ```sh
 python generate.py
 ```
+
 
 ## Model Configurations
 

@@ -41,12 +41,13 @@ def main() -> None:
     global optimize
 
     lr = 0.002
-    batch_size = 2
+    batch_size = 3
+    n_gradient_accumulation_steps = 10
     max_len = 640
     n_epochs = 3
     seed = 3407
 
-    initialise_tpu('v4-16', n_devices=1, rank=0)
+    initialise_tpu('v4-16', n_devices=1, rank=1)
     wandb.init(project='llama-finetuning-gsm')
     jax_smi.initialise_tracking()
     key = rand.PRNGKey(seed)
@@ -59,6 +60,7 @@ def main() -> None:
     params = load_params('/dev/shm/llama2-7B-float16.pickle')
 
     optimizer = optax.adafactor(learning_rate=lr)
+    optimizer = optax.MultiSteps(optimizer, n_gradient_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 

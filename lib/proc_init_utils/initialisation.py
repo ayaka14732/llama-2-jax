@@ -23,9 +23,9 @@ def initialise_cpu(n_devices: int=1) -> None:
 
     _post_init_general()
 
-def initialise_gpu(cuda_visible_devices: Optional[str]=None, preallocate_fraction: float=0.98) -> None:
+def initialise_gpu(cuda_visible_devices: Optional[str]=None) -> None:
     os.environ['JAX_PLATFORMS'] = ''
-    os.environ['XLA_PYTHON_CLIENT_MEM_FRACTION'] = str(preallocate_fraction)
+    os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'
 
     if cuda_visible_devices is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices

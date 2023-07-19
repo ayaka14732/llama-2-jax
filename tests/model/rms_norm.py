@@ -23,5 +23,5 @@ x_jax = pt2jax(x_pt)
 
 y_pt = rms_norm_pt(x_pt)
 y_jax = pt2jax(y_pt)
-y_hat_jax = rms_norm(params_jax, x_jax, config=config_7B)
+y_hat_jax = rms_norm(params_jax, x_jax, model_config=config_7B)
 assert jnp.allclose(y_jax, y_hat_jax)

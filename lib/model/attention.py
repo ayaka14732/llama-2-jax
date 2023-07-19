@@ -7,7 +7,7 @@ import jax.numpy as jnp
 import math
 from typing import NamedTuple
 
-from .Config import Config
+from .ModelConfig import ModelConfig
 from .rotary_embedding import rotary_embedding
 
 class Attention(NamedTuple):
@@ -16,19 +16,19 @@ class Attention(NamedTuple):
     v_proj: Array
     out_proj: Array
 
-def check_attention(params: Attention, *, config: Config) -> None:
+def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert isinstance(params.q_proj, Array)
     assert isinstance(params.k_proj, Array)
     assert isinstance(params.v_proj, Array)
     assert isinstance(params.out_proj, Array)
 
-    assert params.q_proj.shape == (config.d_model, config.n_rep_kv, config.n_heads_kv, config.d_k)
-    assert params.k_proj.shape == (config.d_model, config.n_heads_kv, config.d_k)
-    assert params.v_proj.shape == (config.d_model, config.n_heads_kv, config.d_v)
-    assert params.out_proj.shape == (config.n_rep_kv, config.n_heads_kv, config.d_v, config.d_model)
+    assert params.q_proj.shape == (model_config.d_model, model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_k)
+    assert params.k_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_k)
+    assert params.v_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_v)
+    assert params.out_proj.shape == (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model)
 
-@partial(jax.jit, static_argnames=('config',))
-def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, config: Config) -> Array:
+@partial(jax.jit, static_argnames=('model_config',))
+def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:
     q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_rep_kv n_heads_kv d_k -> batch_size n_rep_kv n_heads_kv src_seq_len d_k')
     k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_k -> batch_size n_heads_kv dst_seq_len d_k')
     v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_v -> batch_size n_heads_kv dst_seq_len d_v')
@@ -37,7 +37,7 @@ def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Arra
     k = rotary_embedding(k)
 
     qk = op.einsum(q, k, 'batch_size n_rep_kv n_heads_kv src_seq_len d_k, batch_size n_heads_kv dst_seq_len d_k -> batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len')
-    qk /= math.sqrt(config.d_k)
+    qk /= math.sqrt(model_config.d_k)
     qk = jnp.where(attn_mask, qk, jnp.NINF)
     qk = nn.softmax(qk)
     qk = jnp.where(attn_mask, qk, 0)

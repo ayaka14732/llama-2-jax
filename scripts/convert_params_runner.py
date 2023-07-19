@@ -14,10 +14,10 @@ pairs = {
 }
 
 def convert(target: str) -> None:
-    path, config = pairs[target]
+    path, model_config = pairs[target]
     model_pt = LlamaForCausalLM.from_pretrained(path)
-    params = convert_llama(model_pt, config=config)
-    check_llama(params, config=config)
+    params = convert_llama(model_pt, model_config=model_config)
+    check_llama(params, model_config=model_config)
     save_params(params, f'{target}.pickle')
 
 if __name__ == '__main__':

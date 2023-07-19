@@ -25,7 +25,7 @@ config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads_q, inte
 config_jax = config_7B._replace(d_model=d_model, n_heads_q=n_heads_q, d_k=d_k, d_v=d_v, d_ff=d_ff)
 
 decoder_block_pt = LlamaDecoderLayer(config=config_pt)
-params_jax = convert_decoder_block(decoder_block_pt, config=config_jax)
+params_jax = convert_decoder_block(decoder_block_pt, model_config=config_jax)
 
 # initialise input sequence
 seq_pt = torch.rand(batch_size, seq_len, d_model)
@@ -43,7 +43,7 @@ mask_pt = torch.where(mask_pt, 0, -10000.)
 
 y_pt = decoder_block_pt(hidden_states=seq_pt, attention_mask=mask_pt)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = decoder_block(params_jax, seq_jax, mask_jax, config=config_jax)
+y_hat_jax = decoder_block(params_jax, seq_jax, mask_jax, model_config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

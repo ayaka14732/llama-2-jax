@@ -6,7 +6,7 @@ import jax.random as rand
 from operator import getitem
 from typing import NamedTuple
 
-from ..model import Config, Llama, llama_model
+from ..model import ModelConfig, Llama, llama_model
 from ._utils import while_loop
 
 class _TopPGenerationState(NamedTuple):
@@ -22,11 +22,11 @@ class TopPGenerationConfig(NamedTuple):
     max_length: int
     top_p: float
 
-def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: Config, top_p_config: TopPGenerationConfig) -> _TopPGenerationState:
+def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: ModelConfig, top_p_config: TopPGenerationConfig) -> _TopPGenerationState:
     key, seq, attn_mask, last_positions, last_tokens, finished = state
     eos_token_id, max_length, top_p = top_p_config
 
-    outputs = llama_model(params.model, seq, attn_mask, key=None, config=model_config)
+    outputs = llama_model(params.model, seq, attn_mask, key=None, model_config=model_config)
     logits = jax.vmap(getitem)(outputs, last_positions) @ params.lm_head
 
     batch_size, vocab_size = logits.shape
@@ -54,7 +54,7 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: C
     print(current_positions, current_tokens, finished)
     return _TopPGenerationState(key, seq, attn_mask, current_positions, current_tokens, finished)
 
-def top_p(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: Config, top_p_config: TopPGenerationConfig) -> Array:
+def top_p(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig, top_p_config: TopPGenerationConfig) -> Array:
     assert 0.0 < top_p_config.top_p < 1.0
 
     last_positions = jnp.argmin(attn_mask, axis=-1) - 1

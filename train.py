@@ -22,7 +22,7 @@ optimize: Optional[Callable]
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    outputs = llama_model(params.model, seq, seq_mask, key=key, config=config_llama2_7B)
+    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=config_llama2_7B)
     logits = outputs @ params.lm_head
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss

@@ -10,18 +10,21 @@ from lib.model import Attention, Config, DecoderBlock, Llama, LlamaModel
 def convert_proj(x: tnn.Linear) -> Array:
     return pt2jax(x.weight.T)
 
-def convert_qk_proj(x: tnn.Linear, *, config: Config) -> Array:
-    return pt2jax(x.weight.T.reshape(config.d_model, config.n_heads_q, config.d_k))
+def convert_q_proj(x: tnn.Linear, *, config: Config) -> Array:
+    return pt2jax(x.weight.T.reshape(config.d_model, config.n_rep_kv, config.n_heads_kv, config.d_k))
+
+def convert_k_proj(x: tnn.Linear, *, config: Config) -> Array:
+    return pt2jax(x.weight.T.reshape(config.d_model, config.n_heads_kv, config.d_k))
 
 def convert_v_proj(x: tnn.Linear, *, config: Config) -> Array:
-    return pt2jax(x.weight.T.reshape(config.d_model, config.n_heads_q, config.d_v))
+    return pt2jax(x.weight.T.reshape(config.d_model, config.n_heads_kv, config.d_v))
 
 def convert_out_proj(x: tnn.Linear, *, config: Config) -> Array:
-    return pt2jax(x.weight.T.reshape(config.n_heads_q, config.d_v, config.d_model))
+    return pt2jax(x.weight.T.reshape(config.n_rep_kv, config.n_heads_kv, config.d_v, config.d_model))
 
 def convert_attention(x: LlamaAttention, *, config: Config) -> Attention:
-    q_proj = convert_qk_proj(x.q_proj, config=config)
-    k_proj = convert_qk_proj(x.k_proj, config=config)
+    q_proj = convert_q_proj(x.q_proj, config=config)
+    k_proj = convert_k_proj(x.k_proj, config=config)
     v_proj = convert_v_proj(x.v_proj, config=config)
     out_proj = convert_out_proj(x.o_proj, config=config)
     return Attention(q_proj=q_proj, k_proj=k_proj, v_proj=v_proj, out_proj=out_proj)

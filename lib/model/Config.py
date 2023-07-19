@@ -1,11 +1,11 @@
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 class Config(NamedTuple):
     d_ff: int
     d_k: int
     d_model: int
     d_v: int
-    dropout_rate: float
+    dropout_rate: Optional[float]
     n_heads_kv: int
     n_heads_q: int
     n_layers: int
@@ -32,3 +32,5 @@ config_7B = Config(
     token_id_pad=0,
     vocab_size=32000,
 )
+
+config_llama2_7B = config_7B

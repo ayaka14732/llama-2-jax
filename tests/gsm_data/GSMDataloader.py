@@ -5,16 +5,16 @@ from functools import partial
 from transformers import LlamaTokenizer
 
 from lib.dataloader import LlamaDataLoader
-from lib.gsm_data import GSMDataset, train_collate_fn_factory
+from lib.gsm_data import GSMDataset, gsm_collate_fn_train
 
-batch_size = 4
+batch_size = 1
 seed = 0
 max_len = 512
 
 def main() -> None:
     dataset = GSMDataset(split='train')
     tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/7B')
-    collate_fn = partial(train_collate_fn_factory, tokenizer, max_len)
+    collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
     for seq, seq_mask, labels, labels_mask in dataloader:

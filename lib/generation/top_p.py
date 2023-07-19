@@ -26,7 +26,7 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: C
     key, seq, attn_mask, last_positions, last_tokens, finished = state
     eos_token_id, max_length, top_p = top_p_config
 
-    outputs = llama_model(params.model, seq, attn_mask, config=model_config)
+    outputs = llama_model(params.model, seq, attn_mask, key=None, config=model_config)
     logits = jax.vmap(getitem)(outputs, last_positions) @ params.lm_head
 
     batch_size, vocab_size = logits.shape

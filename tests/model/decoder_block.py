@@ -32,7 +32,7 @@ seq_pt = torch.rand(batch_size, seq_len, d_model)
 seq_jax = pt2jax(seq_pt)
 
 mask_pt_1d = torch.rand(batch_size, seq_len) > 0.5
-mask_pt = torch.tril(torch.einsum('di,dj->dij', mask_pt_1d, mask_pt_1d))[:, None]
+mask_pt = torch.tril(torch.einsum('bi,bj->bij', mask_pt_1d, mask_pt_1d))[:, None]
 mask_jax_1d = pt2jax(mask_pt_1d)
 mask_jax = pt2jax(mask_pt)
 

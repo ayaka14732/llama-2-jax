@@ -9,8 +9,8 @@ def load_data(*, split=Union[Literal['train'], Literal['test']]):
     with open(path) as f:
         for line in f:
             data = json.loads(line)
-            question = 'Question:\n' + data['question'] + '\n'
-            answer = 'Answer:\n' + data['answer']
+            question = 'Below is an instruction that describes a task. Write a response that appropriately completes the request.\n\n### Instruction:\n' + data['question'] + '\n\n### Response:\n'
+            answer = data['answer']
             answer = answer.replace('#### ', 'Final answer:\n')
             res.append((question, answer))
     return res

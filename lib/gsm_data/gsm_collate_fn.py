@@ -1,3 +1,4 @@
+from itertools import chain, repeat
 from jax import Array
 import jax.numpy as jnp
 from transformers import LlamaTokenizer
@@ -9,7 +10,7 @@ class TrainData(NamedTuple):
     labels: Array
     labels_mask: Array
 
-def train_collate_fn_factory(tokenizer: LlamaTokenizer, max_len: int, data_batch: list[tuple[str, str]]):
+def gsm_collate_fn_train(tokenizer: LlamaTokenizer, max_len: int, data_batch: list[tuple[str, str]]):
     bos_id = tokenizer.bos_token_id
     eos_id = tokenizer.eos_token_id
 
@@ -29,12 +30,11 @@ def train_collate_fn_factory(tokenizer: LlamaTokenizer, max_len: int, data_batch
 
         assert len(question) + 1 < max_len, '`max_len` too small'
 
-        seq = [bos_id, *question, *answer, eos_id] + [eos_id] * len_pad
-        seq_mask = [False] * (len_question + 1) + [True] * (len_answer + 1) + [False] * len_pad
+        seq = list(chain((bos_id,), question, answer, (eos_id,), repeat(eos_id, len_pad)))
+        seq_mask = list(chain(repeat(True, 1 + len_question + len_answer + 1), repeat(False, len_pad)))
 
-        labels = [*question, *answer, eos_id] + [eos_id] * (len_pad + 1)
-        labels_mask = [False] * len_question + [True] * (len_answer + 1) + [False] * (len_pad + 1)  # TODO: functools chain
-        # TODO: revisit
+        labels = list(chain(question, answer, (eos_id,), repeat(eos_id, len_pad + 1)))
+        labels_mask = list(chain(repeat(False, len_question), repeat(True, len_answer + 1), repeat(False, len_pad + 1)))
 
         seq = seq[:max_len]
         seq_mask = seq_mask[:max_len]

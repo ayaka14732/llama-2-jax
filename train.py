@@ -46,10 +46,11 @@ def main() -> None:
     max_len = 640
     n_epochs = 3
     seed = 3407
+    rank = 1
 
-    initialise_tpu('v4-16', n_devices=1, rank=1)
+    initialise_tpu('v4-16', n_devices=1, rank=rank)
     wandb.init(project='llama-finetuning-gsm')
-    jax_smi.initialise_tracking()
+    jax_smi.initialise_tracking(rank=rank)
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')

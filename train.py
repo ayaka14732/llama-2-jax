@@ -45,7 +45,7 @@ def main() -> None:
     n_epochs = 3
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='2', preallocate_fraction=0.1)  # 0,1,2,3
+    initialise_gpu(cuda_visible_devices='2', preallocate_fraction=0.01)  # 0,1,2,3
     wandb.init(project='llama-finetuning-gsm')
     key = rand.PRNGKey(seed)
 

@@ -1,12 +1,14 @@
 {
     "cSpell.words": [
         "PRNG",
+        "adafactor",
         "arange",
         "argnums",
         "asarray",
         "astype",
         "bfloat",
         "cifar",
+        "dtype",
         "einsum",
         "enwiki",
         "fwdwd",
@@ -26,5 +28,6 @@
         "vocab",
         "vstack",
         "wandb"
-    ]
+    ],
+    "mypy.runUsingActiveInterpreter": true
 }

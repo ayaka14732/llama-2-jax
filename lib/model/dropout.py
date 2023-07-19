@@ -1,12 +1,20 @@
 from functools import partial
 import jax
-import jax.numpy as jnp
+from jax import Array
 import jax.random as rand
 
-@partial(jax.jit, static_argnames=('keep_rate',))
-def dropout(params: jnp.array, key: rand.KeyArray, *, keep_rate: float=0.9) -> jnp.array:
-    assert 0. <= keep_rate <= 1.
+from .ModelConfig import ModelConfig
 
-    out = params * rand.bernoulli(key, p=keep_rate, shape=params.shape) / keep_rate
-    assert params.shape == out.shape
+@partial(jax.jit, static_argnames=('model_config',))
+def dropout(x: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
+    if model_config.dropout_rate is None:  # disable dropout
+        return x
+
+    assert 0. <= model_config.dropout_rate <= 1.
+    assert isinstance(x, Array)
+    assert isinstance(key, rand.KeyArray)
+
+    keep_rate = 1. - model_config.dropout_rate
+    out = x * rand.bernoulli(key, p=keep_rate, shape=x.shape) / keep_rate
+    assert x.shape == out.shape
     return out

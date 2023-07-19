@@ -1,4 +1,5 @@
 import os
+from typing import Optional
 
 def _find_free_port() -> int:
     import socket
@@ -12,17 +13,22 @@ def _find_free_port() -> int:
 def _post_init_general() -> None:
     # post-init flags
     import jax
-    jax.config.update('jax_array', True)
     jax.config.update('jax_enable_custom_prng', True)
     jax.config.update('jax_default_prng_impl', 'rbg')
     jax.config.update('jax_default_matmul_precision', jax.lax.Precision.HIGHEST)
 
-def initialise_cpu(n_devices: int | None=None) -> None:
-    if n_devices is None:
-        n_devices = 1
-
+def initialise_cpu(n_devices: int=1) -> None:
     os.environ['JAX_PLATFORMS'] = 'cpu'
     os.environ['XLA_FLAGS'] = os.environ.get('XLA_FLAGS', '') + ' --xla_force_host_platform_device_count=' + str(n_devices)
+
+    _post_init_general()
+
+def initialise_gpu(cuda_visible_devices: Optional[str]=None) -> None:
+    os.environ['JAX_PLATFORMS'] = ''
+    os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'
+
+    if cuda_visible_devices is not None:
+        os.environ['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
 
     _post_init_general()
 
@@ -51,8 +57,8 @@ def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int 
         elif n_devices == 4:
             os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '2,2,1'
             os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
-            if rank != 1:
-                raise ValueError('Rank must be 1.')
+            if rank != 0:
+                raise ValueError('Rank must be 0.')
             os.environ['TPU_VISIBLE_DEVICES'] = '0,1,2,3'
         elif n_devices == 8 or n_devices is None:
             pass

@@ -2,12 +2,19 @@
 jax
 jax-smi
 einops
+flax
+optax
 
 # utilities
 fire
+mypy
+wandb
+tqdm
+types-tqdm
 
 # testing
 torch
+tf-nightly
 transformers
 
 # param conversion

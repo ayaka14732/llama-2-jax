@@ -15,7 +15,7 @@ from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
 from lib.model import Llama, config_llama2_7B, llama_model
 from lib.param_utils import load_params, save_params
-from lib.proc_init_utils import initialise_gpu
+from lib.proc_init_utils import initialise_tpu
 
 optimize: Optional[Callable]
 
@@ -40,21 +40,21 @@ def main() -> None:
     global optimize
 
     lr = 0.002
-    batch_size = 6
+    batch_size = 2
     max_len = 640
     n_epochs = 3
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='0')  # 0,1,2,3
+    initialise_tpu('v4-16', n_devices=1, rank=0)
     wandb.init(project='llama-finetuning-gsm')
     key = rand.PRNGKey(seed)
 
-    tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
+    tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    params = load_params('llama2-7B-float16.pickle')
+    params = load_params('/dev/shm/llama2-7B-float16.pickle')
 
     optimizer = optax.adafactor(learning_rate=lr)
     optimize = optimizer.update

@@ -77,14 +77,6 @@ CUDA 11.8:
 pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
-CUDA 11.5:
-
-After following the instruction of CUDA 11.8, you need to install the CUDA compatibility package. On a Ubuntu server, this can be done by:
-
-```sh
-sudo apt install cuda-compat-11-8
-```
-
 ### Install other dependencies
 
 ```sh
@@ -121,6 +113,8 @@ python ../llama-jax/venv/lib/python3.11/site-packages/transformers/models/llama/
 ln -sf llama-2-70b 70Bf
 python ../llama-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 70Bf --output_dir ../llama-weights/llama2-70B
 ```
+
+Alternatively, you can download the models from [Hugging Face Hub](https://huggingface.co/NousResearch/Llama-2-7b-hf).
 
 ### Convert parameters
 ```sh

@@ -6,6 +6,7 @@ import jax.random as rand
 import optax
 import time
 from transformers import LlamaTokenizer
+from tqdm import tqdm
 from typing import Any, Callable, Optional
 import wandb
 
@@ -38,15 +39,14 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.002
-    batch_size = 5
+    lr = 0.0015
+    batch_size = 6
     max_len = 640
     n_epochs = 4
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='2')  # 0,1,2,3
+    initialise_gpu(cuda_visible_devices='1')  # 0,1,2,3
     wandb.init(project='llama-finetuning-gsm')
-    print(wandb.run.name)  # type: ignore
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
@@ -61,11 +61,12 @@ def main() -> None:
     opt_state = optimizer.init(params)
 
     for _ in range(n_epochs):
+        pbar = tqdm(total=len(dataloader))
         total_loss = jnp.zeros(())
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()
             params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
-            jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}), loss)
+            jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
         wandb.log({'epoch loss': total_loss.item() / (step + 1)})
 
     save_params(params, f'{wandb.run.name}.pickle')  # type: ignore

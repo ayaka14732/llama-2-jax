@@ -9,6 +9,8 @@ optax
 fire
 mypy
 wandb
+tqdm
+types-tqdm
 
 # testing
 torch

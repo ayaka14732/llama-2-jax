@@ -19,7 +19,7 @@ class LlamaDataLoader(DataLoader):
             dataset=dataset,
             batch_size=batch_size,
             shuffle=True,
-            num_workers=6,
+            num_workers=2,
             collate_fn=collate_fn,
             drop_last=True,
             worker_init_fn=worker_init_fn,

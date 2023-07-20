@@ -6,12 +6,12 @@ import torch
 import torch.nn as tnn
 
 from lib.array_utils import pt2jax
-from lib.model import config_7B, embedding
+from lib.model import model_config_llama1_7B, embedding
 
 vocab_size = 12
 d_model = 2
 
-embedding_pt = tnn.Embedding(config_7B.vocab_size, config_7B.d_model, config_7B.token_id_pad)
+embedding_pt = tnn.Embedding(model_config_llama1_7B.vocab_size, model_config_llama1_7B.d_model, model_config_llama1_7B.token_id_pad)
 embedding_pt.weight = tnn.Parameter(torch.randn_like(embedding_pt.weight))
 
 params_pt = embedding_pt.weight

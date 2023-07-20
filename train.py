@@ -14,7 +14,7 @@ import wandb
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, config_llama2_7B, llama_model
+from lib.model import Llama, llama_model, model_config_llama2_7B
 from lib.param_utils import load_params, save_params
 from lib.proc_init_utils import initialise_gpu
 
@@ -23,7 +23,7 @@ optimize: Optional[Callable]
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=config_llama2_7B)
+    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     logits = outputs @ params.lm_head
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss

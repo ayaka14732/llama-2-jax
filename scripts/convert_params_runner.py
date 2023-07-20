@@ -4,12 +4,12 @@ from lib.proc_init_utils import initialise_cpu; initialise_cpu()
 import fire
 from transformers import LlamaForCausalLM
 
-from lib.model import check_llama, config_7B, config_llama2_7B
+from lib.model import check_llama, model_config_llama1_7B, model_config_llama2_7B
 from lib.param_utils import convert_llama, save_params
 
 pairs = {
-    '7B': ('../llama-weights/7B', config_7B),
-    'llama2-7B': ('../llama-weights/llama2-7B', config_llama2_7B),
+    '7B': ('../llama-weights/7B', model_config_llama1_7B),
+    'llama2-7B': ('../llama-weights/llama2-7B', model_config_llama2_7B),
     # 'llama2-70B': ('../llama-weights/llama2-70B', config_70B),
 }
 

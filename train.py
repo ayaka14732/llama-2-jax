@@ -16,7 +16,7 @@ from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
 from lib.model import Llama, config_llama2_7B, llama_model
 from lib.param_utils import load_params, save_params
-from lib.proc_init_utils import initialise_tpu
+from lib.proc_init_utils import initialise_gpu
 
 optimize: Optional[Callable]
 
@@ -46,7 +46,8 @@ def main() -> None:
     n_epochs = 3
     seed = 3407
 
-    initialise_tpu('v4-16', n_devices=1, rank=0)
+    initialise_gpu(cuda_visible_devices='0')
+    # initialise_tpu('v4-16', n_devices=1, rank=0)
     wandb.init(project='llama-finetuning-gsm')
     jax_smi.initialise_tracking()
     key = rand.PRNGKey(seed)

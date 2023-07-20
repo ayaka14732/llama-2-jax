@@ -16,7 +16,7 @@ class ModelConfig(NamedTuple):
     token_id_pad: int
     vocab_size: int
 
-config_7B = ModelConfig(
+model_config_llama1_7B = ModelConfig(
     d_ff=11008,
     d_k=128,
     d_model=4096,
@@ -33,4 +33,4 @@ config_7B = ModelConfig(
     vocab_size=32000,
 )
 
-config_llama2_7B = config_7B
+model_config_llama2_7B = model_config_llama1_7B

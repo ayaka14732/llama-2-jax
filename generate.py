@@ -2,6 +2,7 @@
 # from lib.proc_init_utils import initialise_tpu; initialise_tpu('v4-16', n_devices=1, rank=0)
 from lib.proc_init_utils import initialise_gpu; initialise_gpu()
 
+import jax
 import jax.numpy as jnp
 import jax.random as rand
 from jax_smi import initialise_tracking
@@ -10,6 +11,7 @@ from transformers import LlamaTokenizer
 # from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
 from lib.model import model_config_llama2_7B
+from lib.model.llama import shard_llama
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER
 
@@ -25,13 +27,18 @@ def main() -> None:
     initialise_tracking()
 
     key = rand.PRNGKey(BEST_INTEGER)
-    params = load_params('llama2-7B.pickle')
+    params = shard_llama(load_params('llama2-7B.pickle'))
     # top_k_config = TopKGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_k=10)
     top_p_config = TopPGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_p=0.9)
 
     inputs = tokenizer(sentences, max_length=top_p_config.max_length, padding='max_length', return_tensors='jax')
     seq = inputs.input_ids.astype(jnp.uint16)
     attn_mask = inputs.attention_mask.astype(jnp.bool_)
+
+    from jax.sharding import PositionalSharding; devices = jax.devices(); shards = PositionalSharding(devices); n_shard = len(devices)
+    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, shards.replicate((0,))), x)
+
+    seq, attn_mask = shard_all((seq, attn_mask))
 
     key, subkey = rand.split(key)
     config_llama2_7B_ = model_config_llama2_7B._replace(dropout_rate=None)

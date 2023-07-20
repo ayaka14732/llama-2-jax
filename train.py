@@ -40,8 +40,8 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.002
-    batch_size = 2
+    lr = 2e-5
+    batch_size = 4
     max_len = 640
     n_epochs = 3
     seed = 3407
@@ -59,7 +59,7 @@ def main() -> None:
 
     params = load_params('llama2-7B-float16.pickle')
 
-    optimizer = optax.adafactor(learning_rate=lr)
+    optimizer = optax.adamw(learning_rate=lr)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 
@@ -68,6 +68,7 @@ def main() -> None:
         total_loss = jnp.zeros(())
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()
+            # TODO: save model
             params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
             jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
         wandb.log({'epoch loss': total_loss.item() / (step + 1)})

@@ -41,7 +41,7 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 6
+    batch_size = 4
     max_len = 640
     n_epochs = 3
     seed = 3407

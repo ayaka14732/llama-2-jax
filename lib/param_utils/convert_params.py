@@ -6,6 +6,7 @@ from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecode
 
 from lib.array_utils import pt2jax
 from lib.model import Attention, DecoderBlock, Llama, LlamaModel, ModelConfig
+from lib.tree_utils import stack_leaves
 
 def convert_proj(x: tnn.Linear) -> Array:
     return pt2jax(x.weight.T)
@@ -40,7 +41,7 @@ def convert_decoder_block(x: LlamaDecoderLayer, *, model_config: ModelConfig) ->
 
 def convert_llama_model(model: LlamaModelPt, *, model_config: ModelConfig) -> LlamaModel:
     embedding = pt2jax(model.embed_tokens.weight)
-    decoder = [convert_decoder_block(model.layers[i], model_config=model_config) for i in range(model_config.n_layers)]
+    decoder = stack_leaves([convert_decoder_block(model.layers[i], model_config=model_config) for i in range(model_config.n_layers)])
     norm = pt2jax(model.norm.weight)
     return LlamaModel(embedding=embedding, decoder=decoder, norm=norm)
 

@@ -26,6 +26,8 @@ def rotary_embedding(m: Array) -> Array:
 
     with jax.ensure_compile_time_eval():
         sin_val, cos_val = make_weights(seq_len, d_k)
+        sin_val = sin_val.astype(m.dtype)
+        cos_val = cos_val.astype(m.dtype)
 
     n = rotate_half(m)
     a = op.einsum(m, cos_val, '... seq_len d_k, seq_len d_k -> ... seq_len d_k')

@@ -4,6 +4,7 @@ from jax import Array
 import jax.random as rand
 from typing import NamedTuple
 
+from ..rand_utils import split_key
 from .attention import Attention, attention, check_attention, shard_attention
 from .ModelConfig import ModelConfig
 from .dropout import dropout
@@ -44,10 +45,7 @@ def shard_decoder_block(params: DecoderBlock) -> DecoderBlock:
 
 @partial(jax.jit, static_argnames=('model_config',))
 def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
-    if model_config.dropout_rate is None:
-        key0 = key1 = key2 = None
-    else:
-        key0, key1, key2 = rand.split(key, num=3)
+    key0, key1, key2 = split_key(key, num=3)
 
     seq_ = seq
     seq = rms_norm(params.input_norm, seq, model_config=model_config)

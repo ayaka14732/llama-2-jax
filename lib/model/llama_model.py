@@ -17,7 +17,7 @@ class LlamaModel(NamedTuple):
 
 def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     assert isinstance(params.embedding, Array)
-    assert isinstance(params.decoder, list)
+    assert isinstance(params.decoder, Decoder)
     assert isinstance(params.norm, Array)
 
     check_embedding(params.embedding, model_config=model_config)

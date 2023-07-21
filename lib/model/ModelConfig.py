@@ -7,7 +7,6 @@ class ModelConfig(NamedTuple):
     d_v: int
     dropout_rate: Optional[float]
     n_heads_kv: int
-    n_heads_q: int
     n_layers: int
     n_rep_kv: int
     rms_norm_eps: float
@@ -23,7 +22,6 @@ model_config_llama1_7B = ModelConfig(
     d_v=128,
     dropout_rate=0.1,
     n_heads_kv=32,
-    n_heads_q=32,
     n_layers=32,
     n_rep_kv=1,
     rms_norm_eps=1e-6,
@@ -42,7 +40,6 @@ model_config_llama2_70B = ModelConfig(
     d_v=128,
     dropout_rate=0.1,
     n_heads_kv=8,
-    n_heads_q=64,
     n_layers=80,
     n_rep_kv=8,
     rms_norm_eps=1e-6,

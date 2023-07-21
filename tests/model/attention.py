@@ -21,7 +21,7 @@ n_heads_kv = 2
 torch.manual_seed(BEST_INTEGER)
 
 config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads_kv)
-config_jax = model_config_llama1_7B._replace(d_model=d_model, n_heads_kv=n_heads_kv, n_heads_q=n_heads_kv, d_k=d_k, d_v=d_v, dropout_rate=None)
+config_jax = model_config_llama1_7B._replace(d_model=d_model, n_heads_kv=n_heads_kv, d_k=d_k, d_v=d_v, dropout_rate=None)
 
 attention_pt = LlamaAttention(config=config_pt)
 params_jax = convert_attention(attention_pt, model_config=config_jax)

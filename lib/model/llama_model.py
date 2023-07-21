@@ -38,7 +38,6 @@ def llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, key: rand.K
     assert attn_mask.dtype == jnp.bool_
     assert seq.shape == attn_mask.shape
     assert model_config.d_k % 2 == 0
-    assert model_config.n_heads_kv * model_config.n_rep_kv == model_config.n_heads_q
     assert key is None or model_config.dropout_rate is not None
 
     attn_mask = jnp.tril(jnp.einsum('bi,bj->bij', attn_mask, attn_mask))[:, None, None]

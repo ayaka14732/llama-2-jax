@@ -34,3 +34,20 @@ model_config_llama1_7B = ModelConfig(
 )
 
 model_config_llama2_7B = model_config_llama1_7B
+
+model_config_llama2_70B = ModelConfig(
+    d_ff=28672,
+    d_k=128,
+    d_model=8192,
+    d_v=128,
+    dropout_rate=0.1,
+    n_heads_kv=8,
+    n_heads_q=64,
+    n_layers=80,
+    n_rep_kv=8,
+    rms_norm_eps=1e-6,
+    token_id_bos=1,
+    token_id_eos=2,
+    token_id_pad=0,
+    vocab_size=32000,
+)

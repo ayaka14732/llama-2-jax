@@ -1,5 +1,5 @@
 from .attention import Attention, attention, check_attention
-from .ModelConfig import ModelConfig, model_config_llama1_7B, model_config_llama2_7B
+from .ModelConfig import ModelConfig, model_config_llama1_7B, model_config_llama2_70B, model_config_llama2_7B
 from .decoder import Decoder, check_decoder, decoder
 from .decoder_block import DecoderBlock, check_decoder_block, decoder_block
 from .dropout import dropout

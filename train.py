@@ -49,7 +49,6 @@ def main() -> None:
 
     initialise_gpu(cuda_visible_devices='0,1,2,3')
     # initialise_tpu('v4-16', n_devices=1, rank=0)
-    jax.experimental.compilation_cache.compilation_cache.initialize_cache('cache')
     wandb.init(project='llama-finetuning-gsm')
     jax_smi.initialise_tracking()
     key = rand.PRNGKey(seed)

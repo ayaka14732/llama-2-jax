@@ -1,33 +1,29 @@
 # from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent))
-from lib.proc_init_utils import initialise_tpu; initialise_tpu('v4-16', n_devices=4, rank=0)
+from lib.proc_init_utils import initialise_gpu; initialise_gpu(cuda_visible_devices='0,1')
 
-import jax.numpy as jnp
-import jax_smi
-
+import jax
 import jax.random as rand
+import jax_smi
+import json
 from transformers import LlamaTokenizer
 from functools import partial
 from tqdm import tqdm
 
 from lib.dataloader import LlamaDataLoader
-# from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
+from lib.gsm_data import GSMDataset, gsm_collate_fn_test
 from lib.model import model_config_llama2_7B
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER, HASHED_BUDDHA
-from lib.gsm_data import GSMDataset, TestData, gsm_collate_fn_test
 
 def main() -> None:
-    import jax
     jax_smi.initialise_tracking(interval=0.5)
 
     key = rand.PRNGKey(BEST_INTEGER)
-    params = load_params('proud-sponge-48.pickle')
+    params = load_params('woven-oath-70.pickle')
     max_len = 640
-    batch_size = 4
+    batch_size = 2
     seed = HASHED_BUDDHA
-    
-    # top_k_config = TopKGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=640, top_k=64)
 
     from lib.model.llama import shard_llama
     from lib.tree_utils import stack_leaves
@@ -54,8 +50,9 @@ def main() -> None:
             generated_seq = top_p(params, seq, seq_mask, key=subkey, model_config=config_llama2_7B_, top_p_config=top_p_config)
             decoded_texts = tokenizer.batch_decode(generated_seq, skip_special_tokens=True)
 
-            for decoded_text in decoded_texts:
-                print(decoded_text, labels, sep='\t', file=f)
+            for decoded_text, label in zip(decoded_texts, labels):
+                print(json.dumps([decoded_text, label], ensure_ascii=False), file=f)
+                f.flush()
             pbar.update()
 
 if __name__ == '__main__':

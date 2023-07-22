@@ -44,8 +44,8 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 1
-    n_gradient_accumulation_steps = 10
+    batch_size = 6
+    # n_gradient_accumulation_steps = 10
     max_len = 640
     n_epochs = 4
     seed = 3407
@@ -74,7 +74,7 @@ def main() -> None:
     shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
 
     optimizer = optax.adamw(learning_rate=lr)
-    optimizer = optax.MultiSteps(optimizer, n_gradient_accumulation_steps)
+    # optimizer = optax.MultiSteps(optimizer, n_gradient_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 

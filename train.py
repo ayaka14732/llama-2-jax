@@ -3,7 +3,8 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
-import jax_smi
+from jax.sharding import PositionalSharding
+from jax_smi import initialise_tracking
 import optax
 import time
 from transformers import LlamaTokenizer
@@ -15,9 +16,10 @@ from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
 from lib.model import Llama, llama_model, model_config_llama2_7B
-from lib.model.llama import shard_llama
+from lib.model.llama import create_model_parallel_sharding_llama
 from lib.param_utils import load_params, save_params
-from lib.proc_init_utils import initialise_gpu
+# from lib.proc_init_utils import initialise_gpu
+from lib.proc_init_utils import initialise_tpu
 
 optimize: Optional[Callable]
 
@@ -42,15 +44,15 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 10
+    batch_size = 12
     max_len = 640
-    n_epochs = 3
+    n_epochs = 4
     seed = 3407
 
-    initialise_gpu(cuda_visible_devices='0,1,2,3')
-    # initialise_tpu('v4-16', n_devices=1, rank=0)
+    # initialise_gpu(cuda_visible_devices='0,1,2,3')
+    initialise_tpu('v4-16', n_devices=4, rank=0)
     wandb.init(project='llama-finetuning-gsm')
-    jax_smi.initialise_tracking()
+    initialise_tracking()
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')
@@ -58,10 +60,17 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    params = shard_llama(load_params('llama2-7B.pickle'))
+    cpu_device = jax.devices('cpu')[0]
+    default_devices = jax.devices()
 
-    from jax.sharding import PositionalSharding; devices = jax.devices(); shards = PositionalSharding(devices); n_shard = len(devices)
-    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, shards.replicate((0,))), x)
+    with jax.default_device(cpu_device):
+        params = load_params('llama2-7B.pickle')
+    sharding = PositionalSharding(default_devices)
+    sharding_llama = create_model_parallel_sharding_llama(sharding)
+    params = jax.device_put(params, sharding_llama)
+    print('Params loaded!')
+
+    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
 
     optimizer = optax.adamw(learning_rate=lr)
     optimize = optimizer.update

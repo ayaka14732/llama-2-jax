@@ -44,7 +44,8 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 12
+    batch_size = 4
+    n_gradient_accumulation_steps = 10
     max_len = 640
     n_epochs = 4
     seed = 3407
@@ -68,11 +69,12 @@ def main() -> None:
     sharding = PositionalSharding(default_devices)
     sharding_llama = create_model_parallel_sharding_llama(sharding)
     params = jax.device_put(params, sharding_llama)
-    print('Params loaded!')
+    print('Successfully loaded and sharded model parameters!')
 
     shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
 
     optimizer = optax.adamw(learning_rate=lr)
+    optimizer = optax.MultiSteps(optimizer, n_gradient_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 

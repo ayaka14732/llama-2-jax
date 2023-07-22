@@ -7,7 +7,6 @@ class ModelConfig(NamedTuple):
     d_v: int
     dropout_rate: Optional[float]
     n_heads_kv: int
-    n_heads_q: int
     n_layers: int
     n_rep_kv: int
     rms_norm_eps: float
@@ -16,14 +15,13 @@ class ModelConfig(NamedTuple):
     token_id_pad: int
     vocab_size: int
 
-config_7B = ModelConfig(
+model_config_llama1_7B = ModelConfig(
     d_ff=11008,
     d_k=128,
     d_model=4096,
     d_v=128,
     dropout_rate=0.1,
     n_heads_kv=32,
-    n_heads_q=32,
     n_layers=32,
     n_rep_kv=1,
     rms_norm_eps=1e-6,
@@ -33,4 +31,20 @@ config_7B = ModelConfig(
     vocab_size=32000,
 )
 
-config_llama2_7B = config_7B
+model_config_llama2_7B = model_config_llama1_7B
+
+model_config_llama2_70B = ModelConfig(
+    d_ff=28672,
+    d_k=128,
+    d_model=8192,
+    d_v=128,
+    dropout_rate=0.1,
+    n_heads_kv=8,
+    n_layers=80,
+    n_rep_kv=8,
+    rms_norm_eps=1e-6,
+    token_id_bos=1,
+    token_id_eos=2,
+    token_id_pad=0,
+    vocab_size=32000,
+)

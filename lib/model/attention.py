@@ -4,6 +4,7 @@ import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
+from jax.sharding import PositionalSharding
 import math
 from typing import NamedTuple
 
@@ -26,6 +27,13 @@ def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert params.k_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_k)
     assert params.v_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_v)
     assert params.out_proj.shape == (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model)
+
+def create_model_parallel_sharding_attention(sharding: PositionalSharding) -> Attention:
+    q_proj = sharding.reshape((1, 1, -1, 1))
+    k_proj = sharding.reshape((1, -1, 1))
+    v_proj = sharding.reshape((1, -1, 1))
+    out_proj = sharding.reshape((1, -1, 1, 1))
+    return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
 def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:

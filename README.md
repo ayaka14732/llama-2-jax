@@ -4,7 +4,7 @@ This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.1
 
 This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
 
-This project is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
+This project is a direct fork of [ayaka14732/llama-jax](https://github.com/ayaka14732/llama-jax), which is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
 
 ## Motivation
 
@@ -36,9 +36,11 @@ The objectives of this project are threefold:
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
+    - [ ] Optimisation
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
-- [ ] Distributed and parallel inference
-- [ ] Distributed and parallel training
+- [x] Model parallelism
+- [x] Inference
+- [x] Training
 
 ## Environment Setup
 
@@ -137,7 +139,7 @@ python generate.py
 
 ## Model Configurations
 
-| Name | Parameters | `vocab_size` | `n_layers` | `n_heads_kv` | `n_rep_kv` | `d_model`| `d_ff` |
+| Name | Parameters | `vocab_size` | `n_layers` | `n_heads_kv` | `n_rep_kv` | `d_model` | `d_ff` |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | LLaMA 1 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
 | LLaMA 1 13B | | 32000 | 40 | 40 | 1 | 5120 | |
@@ -196,17 +198,17 @@ The format used in this project:
 ```
 model
   embedding: (32000, 4096)
-  decoder: 32 x decoder_block
-    input_norm: (4096)
+  decoder: decoder_block
+    input_norm: (32, 4096)
     attention
-      q_proj: (4096, 1, 32, 128)
-      k_proj: (4096, 32, 128)
-      v_proj: (4096, 32, 128)
-      out_proj: (1, 32, 128, 4096)
-    post_attn_norm: (4096)
-    gate_proj: (4096, 11008)
-    up_proj: (4096, 11008)
-    down_proj: (11008, 4096)
+      q_proj: (32, 4096, 1, 32, 128)
+      k_proj: (32, 4096, 32, 128)
+      v_proj: (32, 4096, 32, 128)
+      out_proj: (32, 1, 32, 128, 4096)
+    post_attn_norm: (32, 4096)
+    gate_proj: (32, 4096, 11008)
+    up_proj: (32, 4096, 11008)
+    down_proj: (32, 11008, 4096)
   norm: (4096)
 lm_head: (4096, 32000)
 ```
@@ -249,17 +251,17 @@ The format used in this project:
 ```
 model
   embedding: (32000, 8192)
-  decoder: 80 x decoder_block
-    input_norm: (8192)
+  decoder: decoder_block
+    input_norm: (80, 8192)
     attention
-      q_proj: (8192, 8, 8, 128)
-      k_proj: (8192, 8, 128)
-      v_proj: (8192, 8, 128)
-      out_proj: (8, 8, 128, 8192)
-    post_attn_norm: (8192)
-    gate_proj: (8192, 28672)
-    up_proj: (8192, 28672)
-    down_proj: (28672, 8192)
+      q_proj: (80, 8192, 8, 8, 128)
+      k_proj: (80, 8192, 8, 128)
+      v_proj: (80, 8192, 8, 128)
+      out_proj: (80, 8, 8, 128, 8192)
+    post_attn_norm: (80, 8192)
+    gate_proj: (80, 8192, 28672)
+    up_proj: (80, 8192, 28672)
+    down_proj: (80, 28672, 8192)
   norm: (8192)
 lm_head: (8192, 32000)
 ```

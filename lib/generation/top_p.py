@@ -51,7 +51,6 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: M
 
     finished |= (current_positions == max_length - 1) | (current_tokens == eos_token_id)
 
-    print(current_positions, current_tokens, finished)
     return _TopPGenerationState(key, seq, attn_mask, current_positions, current_tokens, finished)
 
 def top_p(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig, top_p_config: TopPGenerationConfig) -> Array:

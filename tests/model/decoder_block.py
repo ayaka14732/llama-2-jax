@@ -7,7 +7,7 @@ from transformers import LlamaConfig
 from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 
 from lib.array_utils import pt2jax
-from lib.model import config_7B, decoder_block
+from lib.model import model_config_llama1_7B, decoder_block
 from lib.param_utils import convert_decoder_block
 from lib.seeding import BEST_INTEGER
 
@@ -17,12 +17,12 @@ d_model = 20
 d_k = 10
 d_v = 10
 d_ff = 13
-n_heads_q = 2
+n_heads_kv = 2
 
 torch.manual_seed(BEST_INTEGER)
 
-config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads_q, intermediate_size=d_ff)
-config_jax = config_7B._replace(d_model=d_model, n_heads_q=n_heads_q, d_k=d_k, d_v=d_v, d_ff=d_ff)
+config_pt = LlamaConfig(hidden_size=d_model, num_attention_heads=n_heads_kv, intermediate_size=d_ff)
+config_jax = model_config_llama1_7B._replace(d_model=d_model, n_heads_kv=n_heads_kv, d_k=d_k, d_v=d_v, d_ff=d_ff)
 
 decoder_block_pt = LlamaDecoderLayer(config=config_pt)
 params_jax = convert_decoder_block(decoder_block_pt, model_config=config_jax)

@@ -3,6 +3,8 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
+from jax.sharding import PositionalSharding
+from jax_smi import initialise_tracking
 import optax
 import time
 from transformers import LlamaTokenizer
@@ -13,8 +15,9 @@ import wandb
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, config_llama2_7B, llama_model
+from lib.model import Llama, create_model_parallel_sharding_llama, llama_model, model_config_llama2_7B
 from lib.param_utils import load_params, save_params
+# from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
 
 optimize: Optional[Callable]
@@ -22,7 +25,7 @@ optimize: Optional[Callable]
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=config_llama2_7B)
+    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     logits = outputs @ params.lm_head
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
@@ -39,14 +42,17 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.002
+    lr = 2e-5
     batch_size = 2
+    n_gradient_accumulation_steps = 2
     max_len = 640
-    n_epochs = 3
+    n_epochs = 4
     seed = 3407
 
-    initialise_tpu('v4-16', n_devices=1, rank=0)
+    # initialise_gpu(cuda_visible_devices='0,1,2,3')
+    initialise_tpu('v4-16', n_devices=4, rank=0)
     wandb.init(project='llama-finetuning-gsm')
+    initialise_tracking()
     key = rand.PRNGKey(seed)
 
     tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')
@@ -54,9 +60,22 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    params = load_params('/dev/shm/llama2-7B-float16.pickle')
+    cpu_device = jax.devices('cpu')[0]
+    default_devices = jax.devices()
 
-    optimizer = optax.adafactor(learning_rate=lr)
+    with jax.default_device(cpu_device):
+        params = load_params('/dev/shm/llama2-7B.pickle')
+    sharding = PositionalSharding(default_devices)
+    sharding_llama = create_model_parallel_sharding_llama(sharding)
+    params = jax.device_put(params, sharding_llama)
+    print('Successfully loaded and sharded model parameters!')
+
+    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
+
+    optimizer = optax.chain(
+        optax.adamw(learning_rate=lr),
+        optax.apply_every(n_gradient_accumulation_steps),
+    )
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 
@@ -65,6 +84,8 @@ def main() -> None:
         total_loss = jnp.zeros(())
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()
+            data_batch = shard_all(data_batch)
+            # TODO: save model
             params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
             jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
         wandb.log({'epoch loss': total_loss.item() / (step + 1)})

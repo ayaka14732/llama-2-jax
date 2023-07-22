@@ -1,7 +1,9 @@
 /venv
 /wandb
+/cache
 __pycache__
 *.pickle
+/*.txt
 /1.py
 /2.py
 /3.py

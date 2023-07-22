@@ -64,7 +64,7 @@ def main() -> None:
     default_devices = jax.devices()
 
     with jax.default_device(cpu_device):
-        params = load_params('llama2-7B.pickle')
+        params = load_params('/dev/shm/llama2-7B.pickle')
     sharding = PositionalSharding(default_devices)
     sharding_llama = create_model_parallel_sharding_llama(sharding)
     params = jax.device_put(params, sharding_llama)

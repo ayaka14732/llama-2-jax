@@ -15,8 +15,7 @@ import wandb
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, llama_model, model_config_llama2_7B
-from lib.model.llama import create_model_parallel_sharding_llama
+from lib.model import Llama, create_model_parallel_sharding_llama, llama_model, model_config_llama2_7B
 from lib.param_utils import load_params, save_params
 # from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu

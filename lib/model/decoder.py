@@ -5,13 +5,13 @@ import jax.random as rand
 from jax.sharding import PositionalSharding
 
 from ..rand_utils import split_key
-from ..tree_utils import stack_leaves
 from .ModelConfig import ModelConfig
 from .decoder_block import DecoderBlock, check_decoder_block, create_model_parallel_sharding_decoder_block, decoder_block
 
 Decoder = DecoderBlock
 
 def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
+    assert isinstance(params, DecoderBlock)
     def inner(state, input_):
         assert isinstance(input_, DecoderBlock)
         check_decoder_block(input_, model_config=model_config)

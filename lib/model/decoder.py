@@ -4,7 +4,7 @@ from jax import Array
 import jax.random as rand
 from jax.sharding import PositionalSharding
 
-from ..rand_utils import split_key
+from ..rand_utils import split_key_nullable
 from .ModelConfig import ModelConfig
 from .decoder_block import DecoderBlock, check_decoder_block, create_model_parallel_sharding_decoder_block, decoder_block
 
@@ -26,7 +26,7 @@ def create_model_parallel_sharding_decoder(sharding: PositionalSharding) -> Deco
 def decoder(params: Decoder, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
     def inner(state, input_):
         key, seq = state
-        key, subkey = split_key(key)
+        key, subkey = split_key_nullable(key)
         seq = decoder_block(input_, seq, attn_mask, key=subkey, model_config=model_config)
         return (key, seq), None
     (key, seq), _ = jax.lax.scan(inner, (key, seq), params)

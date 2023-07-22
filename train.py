@@ -43,8 +43,8 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 3
-    n_gradient_accumulation_steps = 12
+    batch_size = 2
+    n_gradient_accumulation_steps = 36
     max_len = 640
     n_epochs = 4
     seed = 3407

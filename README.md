@@ -36,9 +36,11 @@ The objectives of this project are threefold:
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
+    - [ ] Optimisation
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
-- [ ] Distributed and parallel inference
-- [ ] Distributed and parallel training
+- [x] Model parallelism
+- [x] Inference
+- [x] Training
 
 ## Environment Setup
 

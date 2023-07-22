@@ -3,12 +3,13 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
+from jax.sharding import PositionalSharding
 from typing import NamedTuple
 
 from .ModelConfig import ModelConfig
-from .decoder import Decoder, check_decoder, decoder, shard_decoder
-from .embedding import check_embedding, embedding, shard_embedding
-from .rms_norm import check_rms_norm, rms_norm, shard_rms_norm
+from .decoder import Decoder, check_decoder, create_model_parallel_sharding_decoder, decoder
+from .embedding import check_embedding, create_model_parallel_sharding_embedding, embedding
+from .rms_norm import check_rms_norm, create_model_parallel_sharding_norm, rms_norm
 
 class LlamaModel(NamedTuple):
     embedding: Array
@@ -24,10 +25,10 @@ def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     check_decoder(params.decoder, model_config=model_config)
     check_rms_norm(params.norm, model_config=model_config)
 
-def shard_llama_model(params: LlamaModel) -> LlamaModel:
-    embedding = shard_embedding(params.embedding)
-    decoder = shard_decoder(params.decoder)
-    norm = shard_rms_norm(params.norm)
+def create_model_parallel_sharding_llama_model(sharding: PositionalSharding) -> LlamaModel:
+    embedding = create_model_parallel_sharding_embedding(sharding)
+    decoder = create_model_parallel_sharding_decoder(sharding)
+    norm = create_model_parallel_sharding_norm(sharding)
     return LlamaModel(embedding, decoder, norm)
 
 @partial(jax.jit, static_argnames=('model_config'))

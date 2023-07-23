@@ -1,22 +1,21 @@
 # from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent))
-from lib.proc_init_utils import initialise_tpu; initialise_tpu('v4-16', n_devices=4, rank=0)
+from lib.proc_init_utils import initialise_tpu
 # from lib.proc_init_utils import initialise_gpu; initialise_gpu()
 
 import jax
 import jax.numpy as jnp
 import jax.random as rand
-from jax.sharding import PositionalSharding
 from jax_smi import initialise_tracking
 from transformers import LlamaTokenizer
 
 # from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
 from lib.model import model_config_llama2_7B
-from lib.model.llama import create_model_parallel_sharding_llama
+from lib.multihost_utils import shard_array_to_multihost, shard_model_params_to_multihost
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER
 
-tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/Llama-2-7b-hf')
+tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
 tokenizer.pad_token = tokenizer.eos_token  # TODO: verify this
 sentences = [
     'I believe the meaning of life is',
@@ -25,15 +24,21 @@ sentences = [
 ]
 
 def main() -> None:
+    initialise_tpu('v4-16', n_devices=8, rank=0)
+    is_process_0 = jax.process_index() == 0
+    if is_process_0:
+        print(jax.devices)
     initialise_tracking()
 
     key = rand.PRNGKey(BEST_INTEGER)
-    with jax.default_device(jax.devices('cpu')[0]):
+    cpu_device = jax.devices('cpu')[0]
+    with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
+    params = shard_model_params_to_multihost(params)
 
-    sharding = PositionalSharding(jax.devices())
-    sharding_llama = create_model_parallel_sharding_llama(sharding)
-    params = jax.device_put(params, sharding_llama)
+    # sharding = PositionalSharding(jax.local_devices())
+    # sharding_llama = create_model_parallel_sharding_llama(sharding)
+    # params = jax.device_put(params, sharding_llama)
     # top_k_config = TopKGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_k=10)
     top_p_config = TopPGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_p=0.9)
 
@@ -41,9 +46,8 @@ def main() -> None:
     seq = inputs.input_ids.astype(jnp.uint16)
     attn_mask = inputs.attention_mask.astype(jnp.bool_)
 
-    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
-
-    seq, attn_mask = shard_all((seq, attn_mask))
+    seq = shard_array_to_multihost(seq, ...)
+    attn_mask = shard_array_to_multihost(attn_mask, ...)
 
     key, subkey = rand.split(key)
     config_llama2_7B_ = model_config_llama2_7B._replace(dropout_rate=None)
@@ -51,8 +55,9 @@ def main() -> None:
     generated_seq = top_p(params, seq, attn_mask, key=subkey, model_config=config_llama2_7B_, top_p_config=top_p_config)
     decoded_texts = tokenizer.batch_decode(generated_seq, skip_special_tokens=True)
 
-    for decoded_text in decoded_texts:
-        print(decoded_text, end='\n\n')
+    if is_process_0:
+        for decoded_text in decoded_texts:
+            print(decoded_text, end='\n\n')
 
 if __name__ == '__main__':
     main()

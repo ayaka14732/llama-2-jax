@@ -20,5 +20,5 @@ def shard_array_to_multihost(arr: Array, axis: int | EllipsisType) -> Array:
         mesh = Mesh(devices.reshape(sharding_tuple), name_tuple)
         sharding = NamedSharding(mesh, P(*name_tuple))
 
-    arrays = [jax.device_put(arr[i], device) for device, i in sharding.addressable_devices_indices_map(shape).items()]
-    return jax.make_array_from_single_device_arrays(shape, sharding, arrays)
+    xs = [jax.device_put(arr[i], device) for device, i in sharding.addressable_devices_indices_map(shape).items()]
+    return jax.make_array_from_single_device_arrays(shape, sharding, xs)

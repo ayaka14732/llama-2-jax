@@ -15,13 +15,10 @@ from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
 from lib.model import Llama, llama_model, model_config_llama2_7B
+from lib.multihost_utils import shard_array_to_multihost, shard_model_params_to_multihost
 from lib.param_utils import load_params, save_params
 # from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
-
-from lib.multihost_utils import shard_array_to_multihost
-from lib.tree_utils import tree_apply
-from lib.model import Llama, LlamaModel, Decoder, Attention
 
 optimize: Optional[Callable]
 
@@ -66,32 +63,9 @@ def main() -> None:
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
     cpu_device = jax.devices('cpu')[0]
-    default_devices = jax.devices()
-
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
-
-    sharding = Llama(
-        model=LlamaModel(
-            embedding=...,
-            decoder=Decoder(
-                input_norm=...,
-                attention=Attention(
-                    q_proj=3,
-                    k_proj=2,
-                    v_proj=2,
-                    out_proj=2,
-                ),
-                post_attn_norm=...,
-                gate_proj=2,
-                up_proj=2,
-                down_proj=1,
-            ),
-            norm=...,
-        ),
-        lm_head=...,
-    )
-    params = tree_apply(shard_array_to_multihost, params, sharding)
+    params = shard_model_params_to_multihost(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 

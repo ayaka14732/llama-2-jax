@@ -14,11 +14,11 @@ The objectives of this project are threefold:
 - Develop a high-quality codebase that serves as an exemplary implementation of the Transformer model using JAX;
 - Facilitate the identification of common errors and inconsistencies across various transformer models through the implementation of a high-quality codebase, thereby providing valuable insights for the NLP community.
 
-## Roadmap
+## Features
 
-- [ ] Parameter conversion
+- [x] Parameter conversion
     - [x] [Convert from Hugging Face](lib/param_utils/convert_params.py)
-    - [ ] Convert to Hugging Face
+    - [x] [Convert to Hugging Face](lib/param_utils/convert_back_params.py)
 - [x] Model architecture
     - [x] [Dropout](lib/model/dropout.py)
     - [x] [RMS Norm](lib/model/rms_norm.py)

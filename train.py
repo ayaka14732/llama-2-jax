@@ -18,7 +18,6 @@ from lib.loss import cross_entropy_loss
 from lib.model import Llama, llama_model, model_config_llama2_7B
 from lib.multihost_utils import shard_model_params_to_multihost
 from lib.param_utils import load_params, save_params
-# from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
 
 optimize: Optional[Callable]

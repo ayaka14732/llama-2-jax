@@ -16,7 +16,9 @@ The objectives of this project are threefold:
 
 ## Roadmap
 
-- [x] [Parameter conversion](lib/param_utils/convert_params.py)
+- [ ] Parameter conversion
+    - [x] [Convert from Hugging Face](lib/param_utils/convert_params.py)
+    - [ ] Convert to Hugging Face
 - [x] Model architecture
     - [x] [Dropout](lib/model/dropout.py)
     - [x] [RMS Norm](lib/model/rms_norm.py)
@@ -25,7 +27,7 @@ The objectives of this project are threefold:
     - [x] [Attention](lib/model/attention.py)
     - [x] [Decoder block](lib/model/decoder_block.py)
     - [x] [Decoder](lib/model/decoder.py)
-    - [x] [LLaMA Model](lib/model/llama_model.py)
+    - [x] [Llama Model](lib/model/llama_model.py)
 - [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
 - [x] Logits processing
     - [x] [Bias](lib/logits_processing/bias.py)
@@ -38,9 +40,10 @@ The objectives of this project are threefold:
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
     - [ ] Optimisation
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
-- [x] Model parallelism
 - [x] Inference
 - [x] Training
+- [x] Parallelisation
+    - [x] Model parallelism
 
 ## Environment Setup
 

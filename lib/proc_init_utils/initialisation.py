@@ -16,6 +16,7 @@ def _post_init_general() -> None:
     jax.config.update('jax_enable_custom_prng', True)
     jax.config.update('jax_default_prng_impl', 'rbg')
     jax.config.update('jax_default_matmul_precision', jax.lax.Precision.HIGHEST)
+    jax.config.update('jax_spmd_mode', 'allow_all')
 
 def initialise_cpu(n_devices: int=1) -> None:
     os.environ['JAX_PLATFORMS'] = 'cpu'
@@ -61,7 +62,8 @@ def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int 
                 raise ValueError('Rank must be 0.')
             os.environ['TPU_VISIBLE_DEVICES'] = '0,1,2,3'
         elif n_devices == 8 or n_devices is None:
-            pass
+            if rank != 0:
+                raise ValueError('Rank must be 0.')
         else:
             raise ValueError(f'Invalid value `n_devices`: {n_devices}')
     else:

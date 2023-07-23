@@ -6,16 +6,16 @@ import jax.nn as nn
 import jax.numpy as jnp
 from jax.sharding import PositionalSharding
 import math
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
 from .rotary_embedding import rotary_embedding
 
 class Attention(NamedTuple):
-    q_proj: Array
-    k_proj: Array
-    v_proj: Array
-    out_proj: Array
+    q_proj: Any  # Array
+    k_proj: Any  # Array
+    v_proj: Any  # Array
+    out_proj: Any  # Array
 
 def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert isinstance(params.q_proj, Array)

@@ -2,22 +2,21 @@ from functools import partial
 import jax
 from jax import Array
 import jax.random as rand
-from jax.sharding import PositionalSharding
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from ..rand_utils import split_key_nullable
-from .attention import Attention, attention, check_attention, create_model_parallel_sharding_attention
+from .attention import Attention, attention, check_attention
 from .ModelConfig import ModelConfig
 from .dropout import dropout
 from .rms_norm import check_rms_norm, rms_norm
 
 class DecoderBlock(NamedTuple):
-    input_norm: Array
+    input_norm: Any  # Array
     attention: Attention
-    post_attn_norm: Array
-    gate_proj: Array
-    up_proj: Array
-    down_proj: Array
+    post_attn_norm: Any  # Array
+    gate_proj: Any  # Array
+    up_proj: Any  # Array
+    down_proj: Any  # Array
 
 def check_decoder_block(params: DecoderBlock, *, model_config: ModelConfig) -> None:
     assert isinstance(params.input_norm, Array)
@@ -33,15 +32,6 @@ def check_decoder_block(params: DecoderBlock, *, model_config: ModelConfig) -> N
     assert params.gate_proj.shape == (model_config.d_model, model_config.d_ff)
     assert params.up_proj.shape == (model_config.d_model, model_config.d_ff)
     assert params.down_proj.shape == (model_config.d_ff, model_config.d_model)
-
-def create_model_parallel_sharding_decoder_block(sharding: PositionalSharding) -> DecoderBlock:
-    input_norm = sharding.replicate((0,))
-    attention = create_model_parallel_sharding_attention(sharding)
-    post_attn_norm = sharding.replicate((0,))
-    gate_proj = sharding.reshape((1, -1))
-    up_proj = sharding.reshape((1, -1))
-    down_proj = sharding.reshape((-1, 1))
-    return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
 def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:

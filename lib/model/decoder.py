@@ -2,13 +2,10 @@ from functools import partial
 import jax
 from jax import Array
 import jax.random as rand
-from jax.sharding import PositionalSharding
 
 from ..rand_utils import split_key_nullable
 from .ModelConfig import ModelConfig
-from .decoder_block import DecoderBlock, check_decoder_block, create_model_parallel_sharding_decoder_block, decoder_block
-
-Decoder = DecoderBlock
+from .decoder_block import DecoderBlock, DecoderBlock as Decoder, check_decoder_block, decoder_block
 
 def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
     assert isinstance(params, DecoderBlock)
@@ -17,10 +14,6 @@ def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
         check_decoder_block(input_, model_config=model_config)
         return None, None
     jax.lax.scan(inner, None, params)
-
-def create_model_parallel_sharding_decoder(sharding: PositionalSharding) -> Decoder:
-    sharding_decoder = create_model_parallel_sharding_decoder_block(sharding)
-    return jax.tree_map(lambda x: x.reshape((1, *x.shape)), sharding_decoder)
 
 @partial(jax.jit, static_argnames=('model_config',))
 def decoder(params: Decoder, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:

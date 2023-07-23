@@ -96,7 +96,7 @@ If you couldn't obtain the LLaMA weights, you can download them with [shawwn/lla
 ```sh
 mkdir ../llama-weights-original && cd ../llama-weights-original
 curl -o- https://raw.githubusercontent.com/shawwn/llama-dl/56f50b96072f42fb2520b1ad5a1d6ef30351f23c/llama.sh | bash
-python ../llama-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-weights-original --model_size 7B --output_dir ../llama-weights/7B
+python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-weights-original --model_size 7B --output_dir ../llama-weights/7B
 ```
 
 Llama 2:
@@ -110,17 +110,18 @@ chmod +x download.sh
 ./download.sh
 
 ln -sf llama-2-7b 7Bf
-python ../llama-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 7Bf --output_dir ../llama-weights/llama2-7B
+python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 7Bf --output_dir ../llama-weights/llama2-7B
 
 ln -sf llama-2-70b 70Bf
-python ../llama-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 70Bf --output_dir ../llama-weights/llama2-70B
+python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 70Bf --output_dir ../llama-weights/llama2-70B
 ```
 
-Alternatively, you can download the models from [Hugging Face Hub](https://huggingface.co/NousResearch/Llama-2-7b-hf).
-
 ### Convert parameters
+
 ```sh
+python scripts/convert_params_runner.py llama1-7B
 python scripts/convert_params_runner.py llama2-7B
+python scripts/convert_params_runner.py llama2-70B
 ```
 
 ### Download GSM dataset

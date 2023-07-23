@@ -43,11 +43,11 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 1e-5
+    lr = 0.000025
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
-    n_epochs = 5
+    n_epochs = 6
     seed = 3407
 
     # initialise_gpu(cuda_visible_devices='0,1,2,3')

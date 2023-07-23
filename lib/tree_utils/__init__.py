@@ -9,3 +9,5 @@ def stack_leaves(pytrees, axis: int=0):
 def unstack_leaves(pytrees):
     leaves, treedef = jax.tree_util.tree_flatten(pytrees)
     return [treedef.unflatten(leaf) for leaf in zip(*leaves, strict=True)]
+
+from .tree_apply import tree_apply

@@ -119,7 +119,9 @@ python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llam
 ### Convert parameters
 
 ```sh
+python scripts/convert_params_runner.py llama1-7B
 python scripts/convert_params_runner.py llama2-7B
+python scripts/convert_params_runner.py llama2-70B
 ```
 
 ### Download GSM dataset

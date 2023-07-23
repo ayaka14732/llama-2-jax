@@ -3,7 +3,6 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
-from jax.sharding import PositionalSharding
 from jax_smi import initialise_tracking
 import optax
 import time
@@ -15,10 +14,14 @@ import wandb
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, create_model_parallel_sharding_llama, llama_model, model_config_llama2_7B
+from lib.model import Llama, llama_model, model_config_llama2_7B
 from lib.param_utils import load_params, save_params
 # from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
+
+from lib.multihost_utils import shard_array_to_multihost
+from lib.tree_utils import tree_apply
+from lib.model import Llama, LlamaModel, Decoder, Attention
 
 optimize: Optional[Callable]
 
@@ -43,19 +46,21 @@ def main() -> None:
     global optimize
 
     lr = 2e-5
-    batch_size = 2
-    n_gradient_accumulation_steps = 36
+    batch_size = 12
+    n_gradient_accumulation_steps = 4
     max_len = 640
     n_epochs = 4
     seed = 3407
 
     # initialise_gpu(cuda_visible_devices='0,1,2,3')
-    initialise_tpu('v4-16', n_devices=4, rank=0)
-    wandb.init(project='llama-finetuning-gsm')
-    initialise_tracking()
-    key = rand.PRNGKey(seed)
+    initialise_tpu('v4-16', n_devices=8, rank=0)
+    is_process_0 = jax.process_index() == 0
+    if is_process_0:
+        wandb.init(project='llama-finetuning-gsm')
+        initialise_tracking()
 
-    tokenizer = LlamaTokenizer.from_pretrained('NousResearch/Llama-2-7b-hf')
+    key = rand.PRNGKey(seed)
+    tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
@@ -64,13 +69,33 @@ def main() -> None:
     default_devices = jax.devices()
 
     with jax.default_device(cpu_device):
-        params = load_params('/dev/shm/llama2-7B.pickle')
-    sharding = PositionalSharding(default_devices)
-    sharding_llama = create_model_parallel_sharding_llama(sharding)
-    params = jax.device_put(params, sharding_llama)
-    print('Successfully loaded and sharded model parameters!')
+        params = load_params('llama2-7B.pickle')
 
-    shard_all = lambda x: jax.tree_map(lambda i: jax.device_put(i, sharding.replicate((0,))), x)
+    sharding = Llama(
+        model=LlamaModel(
+            embedding=...,
+            decoder=Decoder(
+                input_norm=...,
+                attention=Attention(
+                    q_proj=3,
+                    k_proj=2,
+                    v_proj=2,
+                    out_proj=2,
+                ),
+                post_attn_norm=...,
+                gate_proj=2,
+                up_proj=2,
+                down_proj=1,
+            ),
+            norm=...,
+        ),
+        lm_head=...,
+    )
+    params = tree_apply(shard_array_to_multihost, params, sharding)
+    if is_process_0:
+        print('Successfully loaded and sharded model parameters!')
+
+    shard_all = lambda x: jax.tree_map(lambda a: shard_array_to_multihost(a, ...), x)
 
     optimizer = optax.chain(
         optax.adamw(learning_rate=lr),
@@ -87,10 +112,13 @@ def main() -> None:
             data_batch = shard_all(data_batch)
             # TODO: save model
             params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
-            jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
-        wandb.log({'epoch loss': total_loss.item() / (step + 1)})
+            if is_process_0:
+                jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
+        if is_process_0:
+            wandb.log({'epoch loss': total_loss.item() / (step + 1)})
 
-    save_params(params, f'{wandb.run.name}.pickle')  # type: ignore
+    if is_process_0:
+        save_params(params, f'{wandb.run.name}.pickle')  # type: ignore
 
 if __name__ == '__main__':
     main()

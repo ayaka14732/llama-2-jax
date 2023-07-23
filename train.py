@@ -1,6 +1,7 @@
 from functools import partial
 import jax
 from jax import Array
+from jax.experimental.multihost_utils import process_allgather
 import jax.numpy as jnp
 import jax.random as rand
 from jax_smi import initialise_tracking
@@ -15,7 +16,7 @@ from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
 from lib.model import Llama, llama_model, model_config_llama2_7B
-from lib.multihost_utils import shard_array_to_multihost, shard_model_params_to_multihost
+from lib.multihost_utils import shard_model_params_to_multihost
 from lib.param_utils import load_params, save_params
 # from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
@@ -42,11 +43,11 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 2e-5
+    lr = 1e-5
     batch_size = 6
-    n_gradient_accumulation_steps = 8
+    n_accumulation_steps = 8
     max_len = 640
-    n_epochs = 4
+    n_epochs = 5
     seed = 3407
 
     # initialise_gpu(cuda_visible_devices='0,1,2,3')
@@ -56,7 +57,7 @@ def main() -> None:
         wandb.init(project='llama-finetuning-gsm')
         initialise_tracking()
 
-    key = rand.PRNGKey(seed)
+    key = rand.PRNGKey(seed)  # TODO: how to shard this?
     tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
@@ -69,30 +70,36 @@ def main() -> None:
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 
-    shard_all = lambda x: jax.tree_map(lambda a: shard_array_to_multihost(a, ...), x)
-
-    optimizer = optax.chain(
-        optax.adamw(learning_rate=lr),
-        optax.apply_every(n_gradient_accumulation_steps),
-    )
+    optimizer = optax.adamw(learning_rate=lr)
+    optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 
     for _ in range(n_epochs):
-        pbar = tqdm(total=len(dataloader))
+        pbar = tqdm(total=len(dataloader) // n_accumulation_steps)
+        step_loss = 0.0
         total_loss = jnp.zeros(())
+
+        def report_to_wandb(start_time, opt_state, loss):
+            nonlocal step_loss
+            step_loss += loss.item()
+            if optimizer.has_updated(opt_state):
+                wandb.log({'train loss': step_loss / n_accumulation_steps, 'time': time.time() - start_time})
+                step_loss = 0.0
+                pbar.update()
+
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()
-            data_batch = shard_all(data_batch)
-            # TODO: save model
             params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
             if is_process_0:
-                jax.debug.callback(lambda loss: wandb.log({'train loss': loss.item(), 'time': time.time() - start_time}) or pbar.update(), loss)
+                jax.debug.callback(report_to_wandb, start_time, opt_state, loss)
+
         if is_process_0:
             wandb.log({'epoch loss': total_loss.item() / (step + 1)})
 
+    gathered_params = process_allgather(params)
     if is_process_0:
-        save_params(params, f'{wandb.run.name}.pickle')  # type: ignore
+        save_params(gathered_params, f'{wandb.run.name}.pickle')  # type: ignore
 
 if __name__ == '__main__':
     main()

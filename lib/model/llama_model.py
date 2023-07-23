@@ -3,18 +3,17 @@ import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
-from jax.sharding import PositionalSharding
-from typing import NamedTuple
+from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
-from .decoder import Decoder, check_decoder, create_model_parallel_sharding_decoder, decoder
-from .embedding import check_embedding, create_model_parallel_sharding_embedding, embedding
-from .rms_norm import check_rms_norm, create_model_parallel_sharding_norm, rms_norm
+from .decoder import Decoder, check_decoder, decoder
+from .embedding import check_embedding, embedding
+from .rms_norm import check_rms_norm, rms_norm
 
 class LlamaModel(NamedTuple):
-    embedding: Array
+    embedding: Any  # Array
     decoder: Decoder
-    norm: Array
+    norm: Any  # Array
 
 def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     assert isinstance(params.embedding, Array)
@@ -24,12 +23,6 @@ def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     check_embedding(params.embedding, model_config=model_config)
     check_decoder(params.decoder, model_config=model_config)
     check_rms_norm(params.norm, model_config=model_config)
-
-def create_model_parallel_sharding_llama_model(sharding: PositionalSharding) -> LlamaModel:
-    embedding = create_model_parallel_sharding_embedding(sharding)
-    decoder = create_model_parallel_sharding_decoder(sharding)
-    norm = create_model_parallel_sharding_norm(sharding)
-    return LlamaModel(embedding, decoder, norm)
 
 @partial(jax.jit, static_argnames=('model_config'))
 def llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:

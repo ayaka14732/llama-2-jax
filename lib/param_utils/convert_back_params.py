@@ -33,27 +33,33 @@ def convert_back_q_proj(x: Array, *, config: LlamaConfig) -> tnn.Linear:
     n_rep_kv = config.num_attention_heads // config.num_key_value_heads
     n_heads_kv = config.num_key_value_heads
     d_k = config.hidden_size // config.num_attention_heads
+    in_features = d_model
+    out_features = n_rep_kv * n_heads_kv * d_k
     with torch.no_grad():
-        linear = tnn.Linear(*x.shape, bias=False)  # type: ignore
-        linear.weight = tnn.Parameter(jax2pt(x).reshape(d_model, n_rep_kv * n_heads_kv * d_k).T)
+        linear = tnn.Linear(in_features, out_features, bias=False)
+        linear.weight = tnn.Parameter(jax2pt(x).reshape(in_features, out_features).T)
         return linear
 
 def convert_back_k_proj(x: Array, *, config: LlamaConfig) -> tnn.Linear:
     d_model = config.hidden_size
     n_heads_kv = config.num_key_value_heads
     d_k = config.hidden_size // config.num_attention_heads
+    in_features = d_model
+    out_features = n_heads_kv * d_k
     with torch.no_grad():
-        linear = tnn.Linear(*x.shape, bias=False)  # type: ignore
-        linear.weight = tnn.Parameter(jax2pt(x).reshape(d_model, n_heads_kv * d_k).T)
+        linear = tnn.Linear(in_features, out_features, bias=False)
+        linear.weight = tnn.Parameter(jax2pt(x).reshape(in_features, out_features).T)
         return linear
 
 def convert_back_v_proj(x: Array, *, config: LlamaConfig) -> tnn.Linear:
     d_model = config.hidden_size
     n_heads_kv = config.num_key_value_heads
     d_v = config.hidden_size // config.num_attention_heads
+    in_features = d_model
+    out_features = n_heads_kv * d_v
     with torch.no_grad():
-        linear = tnn.Linear(*x.shape, bias=False)  # type: ignore
-        linear.weight = tnn.Parameter(jax2pt(x).reshape(d_model, n_heads_kv * d_v).T)
+        linear = tnn.Linear(in_features, out_features, bias=False)
+        linear.weight = tnn.Parameter(jax2pt(x).reshape(in_features, out_features).T)
         return linear
 
 def convert_back_out_proj(x: Array, *, config: LlamaConfig) -> tnn.Linear:
@@ -61,9 +67,11 @@ def convert_back_out_proj(x: Array, *, config: LlamaConfig) -> tnn.Linear:
     n_rep_kv = config.num_attention_heads // config.num_key_value_heads
     n_heads_kv = config.num_key_value_heads
     d_v = config.hidden_size // config.num_attention_heads
+    in_features = n_rep_kv * n_heads_kv * d_v
+    out_features = d_model
     with torch.no_grad():
-        linear = tnn.Linear(*x.shape, bias=False)  # type: ignore
-        linear.weight = tnn.Parameter(jax2pt(x).reshape(n_rep_kv * n_heads_kv * d_v, d_model).T)
+        linear = tnn.Linear(in_features, out_features, bias=False)  # type: ignore
+        linear.weight = tnn.Parameter(jax2pt(x).reshape(in_features, out_features).T)
         return linear
 
 def convert_back_attention(x: Attention, *, config: LlamaConfig) -> LlamaAttention:

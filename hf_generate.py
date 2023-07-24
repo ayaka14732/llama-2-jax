@@ -17,4 +17,4 @@ model = convert_back_llama(params, config=config)
 model.bfloat16()
 
 inputs = tokenizer(['What is the meaning of life?'], return_tensors='pt')
-model.generate(**inputs, do_sample=True, max_new_tokens=1)
+print(model.generate(**inputs, do_sample=True, max_new_tokens=1))

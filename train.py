@@ -18,7 +18,6 @@ from lib.loss import cross_entropy_loss
 from lib.model import Llama, llama_model, model_config_llama2_7B
 from lib.multihost_utils import shard_model_params_to_multihost
 from lib.param_utils import load_params, save_params
-# from lib.proc_init_utils import initialise_gpu
 from lib.proc_init_utils import initialise_tpu
 
 optimize: Optional[Callable]
@@ -43,11 +42,11 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 1e-5
+    lr = 0.00003
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
-    n_epochs = 5
+    n_epochs = 7
     seed = 3407
 
     # initialise_gpu(cuda_visible_devices='0,1,2,3')

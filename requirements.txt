@@ -9,6 +9,7 @@ optax
 fire
 mypy
 wandb
+matplotlib
 tqdm
 types-tqdm
 

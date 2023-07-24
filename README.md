@@ -82,10 +82,33 @@ CUDA 11.8:
 pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 ```
 
-### Install other dependencies
+### Install the proper version of PyTorch
+
+Normally. you just need to install the CPU version of PyTorch, since we are doing most of the computation in JAX. However, the code for generation in the current codebase is not yet fully optimised, so one way for speeding up the inference would be to convert the model back to Hugging Face format.
+
+Following the [official installation guide](https://pytorch.org/get-started/locally/).
+
+CPU:
 
 ```sh
 pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
+```
+
+CUDA 12:
+
+```sh
+pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu121
+```
+
+CUDA 11.8:
+
+```sh
+pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118
+```
+
+### Install other dependencies
+
+```sh
 pip install git+https://github.com/huggingface/transformers.git
 pip install -r requirements.txt
 ```
@@ -127,18 +150,42 @@ python scripts/convert_params_runner.py llama2-7B
 python scripts/convert_params_runner.py llama2-70B
 ```
 
-### Download GSM dataset
+### Special configuration for TPU Pods
+
+If you are running on TPU pods or other multi-host environments, you need to put the IP address of other machines in `external-ips.txt` (one IP address per line). Besides, you should make sure that one of the hosts can SSH into other hosts.
+
+### Generation
+
+```sh
+python generate.py
+```
+
+On TPU pods, the command is:
+
+```sh
+./startpod python generate.py
+```
+
+## Training
 
 I present a simple example of the training pipeline by fine-tuning the model on the GSM dataset.
+
+### Download GSM dataset
 
 ```sh
 cd .. && git clone --depth=1 https://github.com/openai/grade-school-math.git
 ```
 
-### Test generation
+### Run the training script
 
 ```sh
-python generate.py
+python train.py
+```
+
+On TPU pods, the command is:
+
+```sh
+./startpod python train.py
 ```
 
 ## Model Configurations

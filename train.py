@@ -42,7 +42,7 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.00003
+    lr = 0.0005
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
@@ -69,7 +69,7 @@ def main() -> None:
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 
-    optimizer = optax.adamw(learning_rate=lr)
+    optimizer = optax.adafactor(learning_rate=lr)
     optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)

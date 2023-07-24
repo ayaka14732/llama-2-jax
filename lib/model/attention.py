@@ -28,13 +28,6 @@ def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert params.v_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_v)
     assert params.out_proj.shape == (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model)
 
-def create_model_parallel_sharding_attention(sharding: PositionalSharding) -> Attention:
-    q_proj = sharding.reshape((1, 1, -1, 1))
-    k_proj = sharding.reshape((1, -1, 1))
-    v_proj = sharding.reshape((1, -1, 1))
-    out_proj = sharding.reshape((1, -1, 1, 1))
-    return Attention(q_proj, k_proj, v_proj, out_proj)
-
 @partial(jax.jit, static_argnames=('model_config',))
 def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:
     q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_rep_kv n_heads_kv d_k -> batch_size n_rep_kv n_heads_kv src_seq_len d_k')

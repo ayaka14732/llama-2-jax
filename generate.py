@@ -36,9 +36,6 @@ def main() -> None:
         params = load_params('llama2-7B.pickle')
     params = shard_model_params_to_multihost(params)
 
-    # sharding = PositionalSharding(jax.local_devices())
-    # sharding_llama = create_model_parallel_sharding_llama(sharding)
-    # params = jax.device_put(params, sharding_llama)
     # top_k_config = TopKGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_k=10)
     top_p_config = TopPGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_p=0.9)
 

@@ -69,7 +69,7 @@ def main() -> None:
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 
-    optimizer = optax.adafactor(learning_rate=lr)
+    optimizer = optax.adamw(learning_rate=lr)
     optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)

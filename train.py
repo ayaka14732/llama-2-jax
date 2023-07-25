@@ -64,7 +64,8 @@ def main() -> None:
 
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
-        params = load_params('llama2-7B.pickle').astype(jnp.float32)
+        params = load_params('llama2-7B.pickle')
+        params = jax.tree_map(lambda x: x.astype(jnp.float32), params)
     params = shard_model_params_to_multihost(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')

@@ -54,7 +54,7 @@ def main() -> None:
 
     if is_process_0:
         import wandb
-        wandb.init(project='llama-finetuning-gsm')
+        wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
         initialise_tracking()
 
     key = rand.PRNGKey(seed)  # TODO: how to shard this?

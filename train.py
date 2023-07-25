@@ -43,7 +43,7 @@ def main() -> None:
     global optimize
 
     lr = 0.00007
-    batch_size = 2
+    batch_size = 1
     n_accumulation_steps = 8
     max_len = 640
     n_epochs = 7

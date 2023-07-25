@@ -88,7 +88,7 @@ pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax
 
 ### Install the proper version of PyTorch
 
-Typically, you only need to install the CPU version of PyTorch since we perform most of the computation using JAX. However, it's worth noting that the current codebase's generation process is not fully optimized yet. To expedite the inference, one effective approach would involve converting the model back to Hugging Face format and running the inference in PyTorch.
+Typically, you only need to install the CPU version of PyTorch since we perform most of the computation using JAX. However, it's worth noting that the current codebase's generation process is not fully optimised yet. To expedite the inference, one effective approach would involve converting the model back to Hugging Face format and running the inference in PyTorch.
 
 To install PyTorch, you can follow the [official installation guide](https://pytorch.org/get-started/locally/).
 

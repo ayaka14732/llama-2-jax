@@ -75,7 +75,7 @@ def main() -> None:
         init_value=0.,
         peak_value=lr,
         warmup_steps=n_steps,
-        decay_steps=n_steps,
+        decay_steps=n_steps + 1,
         end_value=lr,
     )
     optimizer = optax.adamw(learning_rate=schedule)

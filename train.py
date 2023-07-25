@@ -10,7 +10,6 @@ import time
 from transformers import LlamaTokenizer
 from tqdm import tqdm
 from typing import Any, Callable, Optional
-import wandb
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
@@ -42,17 +41,19 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.00007
+    lr = 0.00008
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
     n_epochs = 7
     seed = 3407
 
-    # initialise_gpu(cuda_visible_devices='0,1,2,3')
     initialise_tpu('v4-16', n_devices=8, rank=0)
     is_process_0 = jax.process_index() == 0
+    cpu_device = jax.devices('cpu')[0]
+
     if is_process_0:
+        import wandb
         wandb.init(project='llama-finetuning-gsm')
         initialise_tracking()
 
@@ -62,7 +63,6 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
     params = shard_model_params_to_multihost(params)
@@ -79,13 +79,14 @@ def main() -> None:
         step_loss = 0.0
         total_loss = jnp.zeros(())
 
-        def report_to_wandb(start_time, opt_state, loss):
-            nonlocal step_loss
-            step_loss += loss.item()
-            if optimizer.has_updated(opt_state):
-                wandb.log({'train loss': step_loss / n_accumulation_steps, 'time': time.time() - start_time})
-                step_loss = 0.0
-                pbar.update()
+        if is_process_0:
+            def report_to_wandb(start_time, opt_state, loss):
+                nonlocal step_loss
+                step_loss += loss.item()
+                if optimizer.has_updated(opt_state):
+                    wandb.log({'train loss': step_loss / n_accumulation_steps, 'time': time.time() - start_time})
+                    step_loss = 0.0
+                    pbar.update()
 
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()

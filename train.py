@@ -5,12 +5,12 @@ from jax.experimental.multihost_utils import process_allgather
 import jax.numpy as jnp
 import jax.random as rand
 from jax_smi import initialise_tracking
+import math
 import optax
 import time
 from transformers import LlamaTokenizer
 from tqdm import tqdm
 from typing import Any, Callable, Optional
-import wandb
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
@@ -42,18 +42,20 @@ def train_step(params: dict, opt_state: Any, total_loss: Array, data_batch: Trai
 def main() -> None:
     global optimize
 
-    lr = 0.00003
+    lr = 0.0001
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
     n_epochs = 7
     seed = 3407
 
-    # initialise_gpu(cuda_visible_devices='0,1,2,3')
     initialise_tpu('v4-16', n_devices=8, rank=0)
     is_process_0 = jax.process_index() == 0
+    cpu_device = jax.devices('cpu')[0]
+
     if is_process_0:
-        wandb.init(project='llama-finetuning-gsm')
+        import wandb
+        wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
         initialise_tracking()
 
     key = rand.PRNGKey(seed)  # TODO: how to shard this?
@@ -62,14 +64,21 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
     params = shard_model_params_to_multihost(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 
-    optimizer = optax.adamw(learning_rate=lr)
+    n_steps = math.ceil(len(dataloader) / n_accumulation_steps)
+    schedule = optax.warmup_cosine_decay_schedule(
+        init_value=0.,
+        peak_value=lr,
+        warmup_steps=n_steps,
+        decay_steps=n_steps + 1,
+        end_value=lr,
+    )
+    optimizer = optax.adamw(learning_rate=schedule)
     optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)
@@ -79,13 +88,14 @@ def main() -> None:
         step_loss = 0.0
         total_loss = jnp.zeros(())
 
-        def report_to_wandb(start_time, opt_state, loss):
-            nonlocal step_loss
-            step_loss += loss.item()
-            if optimizer.has_updated(opt_state):
-                wandb.log({'train loss': step_loss / n_accumulation_steps, 'time': time.time() - start_time})
-                step_loss = 0.0
-                pbar.update()
+        if is_process_0:
+            def report_to_wandb(start_time, opt_state, loss):
+                nonlocal step_loss
+                step_loss += loss.item()
+                if optimizer.has_updated(opt_state):
+                    wandb.log({'train loss': step_loss / n_accumulation_steps, 'time': time.time() - start_time})
+                    step_loss = 0.0
+                    pbar.update()
 
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()

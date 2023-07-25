@@ -51,6 +51,10 @@ This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transf
 
 PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 
+### Install Python 3.11
+
+For Ubuntu users, you can follow [How to install Python 3.11 on Ubuntu 22.04](https://unixcop.com/install-python-3-11-ubuntu/) to Install Python 3.11. The tutorial applied to Ubuntu 20.04 as well.
+
 ### Create `venv`
 
 ```sh
@@ -84,9 +88,9 @@ pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax
 
 ### Install the proper version of PyTorch
 
-Normally. you just need to install the CPU version of PyTorch, since we are doing most of the computation in JAX. However, the code for generation in the current codebase is not yet fully optimised, so one way for speeding up the inference would be to convert the model back to Hugging Face format.
+Typically, you only need to install the CPU version of PyTorch since we perform most of the computation using JAX. However, it's worth noting that the current codebase's generation process is not fully optimised yet. To expedite the inference, one effective approach would involve converting the model back to Hugging Face format and running the inference in PyTorch.
 
-Following the [official installation guide](https://pytorch.org/get-started/locally/).
+To install PyTorch, you can follow the [official installation guide](https://pytorch.org/get-started/locally/).
 
 CPU:
 

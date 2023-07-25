@@ -5,6 +5,7 @@ from jax.experimental.multihost_utils import process_allgather
 import jax.numpy as jnp
 import jax.random as rand
 from jax_smi import initialise_tracking
+import math
 import optax
 import time
 from transformers import LlamaTokenizer
@@ -69,7 +70,15 @@ def main() -> None:
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 
-    optimizer = optax.adamw(learning_rate=lr)
+    n_steps = math.ceil(len(dataloader) / n_accumulation_steps)
+    schedule = optax.warmup_cosine_decay_schedule(
+        init_value=0.,
+        peak_value=lr,
+        warmup_steps=n_steps,
+        decay_steps=n_steps,
+        end_value=lr,
+    )
+    optimizer = optax.adamw(learning_rate=schedule)
     optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
     optimize = optimizer.update
     opt_state = optimizer.init(params)

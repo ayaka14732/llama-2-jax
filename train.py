@@ -58,7 +58,7 @@ def main() -> None:
         wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
         initialise_tracking()
 
-    key = rand.PRNGKey(seed)  # TODO: how to shard this?
+    key = rand.PRNGKey(seed)
     tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)

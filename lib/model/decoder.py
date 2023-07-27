@@ -8,7 +8,6 @@ from .ModelConfig import ModelConfig
 from .decoder_block import DecoderBlock, DecoderBlock as Decoder, check_decoder_block, decoder_block
 
 def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
-    assert isinstance(params, DecoderBlock)
     def inner(state, input_):
         assert isinstance(input_, DecoderBlock)
         check_decoder_block(input_, model_config=model_config)

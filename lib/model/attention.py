@@ -4,7 +4,6 @@ import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
-from jax.sharding import PositionalSharding
 import math
 from typing import Any, NamedTuple
 

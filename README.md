@@ -47,7 +47,7 @@ The objectives of this project are threefold:
 
 ## Environment Setup
 
-This project requires at least Python 3.11, JAX 0.4.13, PyTorch 2.1.0 and Transformers 4.32.0.dev0.
+This project requires at least Python 3.11, JAX 0.4.14, PyTorch 2.1.0 and Transformers 4.32.0.dev0.
 
 PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 

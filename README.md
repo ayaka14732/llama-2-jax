@@ -2,9 +2,16 @@
 
 This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461).
 
-This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
+## Similar Projects
 
-This project is a direct fork of [ayaka14732/llama-jax](https://github.com/ayaka14732/llama-jax), which is inspired by [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax).
+- [hyunwoongko/transformer](https://github.com/hyunwoongko/transformer): PyTorch implementation of the original Transformer
+- [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax): JAX implementation of BART-base
+- [ztjhz/t5-jax](https://github.com/ztjhz/t5-jax): JAX implementation of T5
+- [young-geng/EasyLM](https://github.com/young-geng/EasyLM): LLM framework that includes Flax implementations of LLaMA, GPT-J and RoBERTa
+
+## Acknowledgements
+
+This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
 
 ## Motivation
 
@@ -44,6 +51,7 @@ The objectives of this project are threefold:
 - [x] Training
 - [x] Parallelisation
     - [x] [Model parallelism](lib/multihost_utils/shard_model_params_to_multihost.py)
+- [ ] Documentation (published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/))
 
 ## Environment Setup
 

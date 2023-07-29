@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: 'pages'
@@ -34,25 +36,12 @@ jobs:
           pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
           pip install git+https://github.com/huggingface/transformers.git
           pip install -r requirements.txt
-
-  deploy:
-    needs: build
-    permissions:
-      pages: write
-      id-token: write
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
       - name: Build documentation
         run: |
           . venv/bin/activate
           pdoc --html -o docs -f -c sort_identifiers=False lib
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v1
+      - uses: actions/upload-pages-artifact@v1
         with:
           path: './docs/lib'
-      - name: Deploy to GitHub Pages
+      - uses: actions/deploy-pages@v2
         id: deployment
-        uses: actions/deploy-pages@v2

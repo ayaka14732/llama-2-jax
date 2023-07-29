@@ -22,7 +22,8 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11' 
+          python-version: '3.11'
+          cache: 'pip'
       - name: Install dependencies
         run: |
           python3.11 -m venv venv
@@ -45,7 +46,9 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Build documentation
-        run: pdoc --html -o docs -f -c sort_identifiers=False lib
+        run: |
+          . venv/bin/activate
+          pdoc --html -o docs -f -c sort_identifiers=False lib
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:

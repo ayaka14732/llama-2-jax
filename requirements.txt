@@ -12,6 +12,7 @@ wandb
 matplotlib
 tqdm
 types-tqdm
+pdoc3
 
 # testing
 torch

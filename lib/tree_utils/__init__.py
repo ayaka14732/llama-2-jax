@@ -1,5 +1,6 @@
 import jax
 import jax.numpy as jnp
+from typing import Callable
 
 # https://docs.liesel-project.org/en/v0.1.4/_modules/liesel/goose/pytree.html#stack_leaves
 def stack_leaves(pytrees, axis: int=0):
@@ -24,17 +25,17 @@ def unstack_leaves(pytrees):
         pytrees: A PyTree.
 
     Returns:
-        A list of PyTrees, where each PyTree has the same structure as the input PyTree, but with only one of the original leaves.
+        A list of PyTrees, where each PyTree has the same structure as the input PyTree, but each leaf contains only one part of the original leaf.
     '''
     leaves, treedef = jax.tree_util.tree_flatten(pytrees)
     return [treedef.unflatten(leaf) for leaf in zip(*leaves, strict=True)]
 
-def tree_apply(func, *pytrees):
+def tree_apply(func: Callable, *pytrees):
     '''
     Apply a function to the leaves of one or more PyTrees.
 
     Args:
-        func (callable): Function to apply to each leaf. It must take the same number of arguments as there are PyTrees.
+        func (Callable): Function to apply to each leaf. It must take the same number of arguments as there are PyTrees.
         pytrees: One or more PyTrees.
 
     Returns:

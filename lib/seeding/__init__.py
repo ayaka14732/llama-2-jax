@@ -1,5 +1,18 @@
-# best integer for seeding, proposed in https://arxiv.org/abs/2109.08203
+MEMPTY = 0
+'''
+The identity element of the monoid that is the set of integers.
+
+A type `a` is a monoid if it provides an associative function that lets you combine any two values of type `a` into one, and a neutral element (`mempty`) such that
+
+```haskell
+a <> mempty == mempty <> a == a.
+```
+
+A monoid is a semigroup with the added requirement of a neutral element. Therefore, any monoid is a semigroup, but not the other way around.
+'''
+
 BEST_INTEGER = 3407
+'''The best integer for seeding, as proposed in https://arxiv.org/abs/2109.08203.'''
 
 BUDDHA = r'''
                   _oo0oo_
@@ -23,5 +36,7 @@ BUDDHA = r'''
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
          佛祖保佑         永無 BUG
 '''
+'''The "May Buddha bless us: no bugs forever" ASCII art. Placing this ASCII art in the codebase is a common practice to prevent bugs and avoid having to debug the code.'''
 
 HASHED_BUDDHA = 3516281645  # hash(BUDDHA) % 2**32
+'''The hashed value of the `BUDDHA` string.'''

@@ -7,12 +7,7 @@ sharding_mp = Llama(
         embedding=...,
         decoder=Decoder(
             input_norm=...,
-            attention=Attention(
-                q_proj=3,
-                k_proj=2,
-                v_proj=2,
-                out_proj=2,
-            ),
+            attention=Attention(q_proj=3, k_proj=2, v_proj=2, out_proj=2),
             post_attn_norm=...,
             gate_proj=2,
             up_proj=2,
@@ -23,5 +18,5 @@ sharding_mp = Llama(
     lm_head=...,
 )
 
-def shard_model_params_to_multihost(params: Llama):
+def shard_model_params_to_multihost(params: Llama) -> Llama:
     return tree_apply(shard_array_to_multihost, params, sharding_mp)

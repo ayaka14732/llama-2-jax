@@ -6,9 +6,9 @@ import jax.random as rand
 from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
-from .decoder import Decoder, check_decoder, decoder
-from .embedding import check_embedding, embedding
-from .rms_norm import check_rms_norm, rms_norm
+from .decoder import Decoder, check_decoder, decoder, init_decoder
+from .embedding import check_embedding, embedding, init_embedding
+from .rms_norm import check_rms_norm, init_rms_norm, rms_norm
 
 class LlamaModel(NamedTuple):
     embedding: Any  # Array
@@ -23,6 +23,13 @@ def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     check_embedding(params.embedding, model_config=model_config)
     check_decoder(params.decoder, model_config=model_config)
     check_rms_norm(params.norm, model_config=model_config)
+
+def init_llama_model(*, key: rand.KeyArray, model_config: ModelConfig) -> LlamaModel:
+    key0, key1 = rand.split(key)
+    embedding = init_embedding(key=key0, model_config=model_config)
+    decoder = init_decoder(key=key1, model_config=model_config)
+    norm = init_rms_norm(model_config=model_config)
+    return LlamaModel(embedding, decoder, norm)
 
 @partial(jax.jit, static_argnames=('model_config'))
 def llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:

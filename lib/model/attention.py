@@ -4,6 +4,7 @@ import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
+import jax.random as rand
 import math
 from typing import Any, NamedTuple
 
@@ -26,6 +27,15 @@ def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert params.k_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_k)
     assert params.v_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_v)
     assert params.out_proj.shape == (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model)
+
+def init_attention(*, key: rand.KeyArray, model_config: ModelConfig) -> Attention:
+    upper = 1. / math.sqrt(model_config.d_model)
+    key0, key1, key2, key3 = rand.split(key, num=4)
+    q_proj = rand.truncated_normal(key0, -upper, upper, (model_config.d_model, model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_k))
+    k_proj = rand.truncated_normal(key1, -upper, upper, (model_config.d_model, model_config.n_heads_kv, model_config.d_k))
+    v_proj = rand.truncated_normal(key2, -upper, upper, (model_config.d_model, model_config.n_heads_kv, model_config.d_v))
+    out_proj = rand.truncated_normal(key3, -upper, upper, (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model))
+    return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
 def attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:

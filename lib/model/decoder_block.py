@@ -2,13 +2,14 @@ from functools import partial
 import jax
 from jax import Array
 import jax.random as rand
-from typing import Any, NamedTuple
+import math
+from typing import Any, NamedTuple, Optional
 
 from ..rand_utils import split_key_nullable
-from .attention import Attention, attention, check_attention
+from .attention import Attention, attention, check_attention, init_attention
 from .ModelConfig import ModelConfig
 from .dropout import dropout
-from .rms_norm import check_rms_norm, rms_norm
+from .rms_norm import check_rms_norm, init_rms_norm, rms_norm
 
 class DecoderBlock(NamedTuple):
     input_norm: Any  # Array
@@ -33,8 +34,19 @@ def check_decoder_block(params: DecoderBlock, *, model_config: ModelConfig) -> N
     assert params.up_proj.shape == (model_config.d_model, model_config.d_ff)
     assert params.down_proj.shape == (model_config.d_ff, model_config.d_model)
 
+def init_decoder_block(*, key: rand.KeyArray, model_config: ModelConfig) -> DecoderBlock:
+    upper = 1. / math.sqrt(model_config.d_model)
+    key0, key1, key2, key3 = rand.split(key, num=4)
+    input_norm = init_rms_norm(model_config=model_config)
+    attention = init_attention(key=key0, model_config=model_config)
+    post_attn_norm = init_rms_norm(model_config=model_config)
+    gate_proj = rand.truncated_normal(key1, -upper, upper, (model_config.d_model, model_config.d_ff))
+    up_proj = rand.truncated_normal(key2, -upper, upper, (model_config.d_model, model_config.d_ff))
+    down_proj = rand.truncated_normal(key3, -upper, upper, (model_config.d_ff, model_config.d_model))
+    return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
+
 @partial(jax.jit, static_argnames=('model_config',))
-def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
+def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: Optional[rand.KeyArray], model_config: ModelConfig) -> Array:
     key0, key1, key2 = split_key_nullable(key, num=3)
 
     seq_ = seq

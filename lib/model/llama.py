@@ -23,3 +23,6 @@ def init_llama(*, key: rand.KeyArray, model_config: ModelConfig) -> Llama:
     model = init_llama_model(key=key0, model_config=model_config)
     lm_head = rand.truncated_normal(key1, -upper, upper, (model_config.d_model, model_config.vocab_size))
     return Llama(model, lm_head)
+
+def forward_llama():
+    ...

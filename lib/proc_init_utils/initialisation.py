@@ -26,47 +26,60 @@ def initialise_cpu(n_devices: int=1) -> None:
 
 def initialise_gpu(cuda_visible_devices: Optional[str]=None) -> None:
     os.environ['JAX_PLATFORMS'] = ''
-    os.environ['XLA_PYTHON_CLIENT_ALLOCATOR'] = 'platform'
 
     if cuda_visible_devices is not None:
         os.environ['CUDA_VISIBLE_DEVICES'] = cuda_visible_devices
 
     _post_init_general()
 
-def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int | None=None) -> None:
+def _initialise_tpu_one_chip(rank: int) -> None:
+    port = _find_free_port()
+    os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '1,1,1'
+    os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
+    if rank not in (0, 1, 2, 3):
+        raise ValueError('Rank must be within 0-3.')
+    os.environ['TPU_VISIBLE_DEVICES'] = str(rank)
+    os.environ['TPU_MESH_CONTROLLER_ADDRESS'] = f'localhost:{port}'
+    os.environ['TPU_MESH_CONTROLLER_PORT'] = str(port)
+
+def _initialise_tpu_two_chip(rank: int) -> None:
+    port = _find_free_port()
+    os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '1,2,1'
+    os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
+    if rank not in (0, 1):
+        raise ValueError('Rank must be either 0 or 1.')
+    os.environ['TPU_VISIBLE_DEVICES'] = ('0,1', '2,3')[rank]
+    os.environ['TPU_MESH_CONTROLLER_ADDRESS'] = f'localhost:{port}'
+    os.environ['TPU_MESH_CONTROLLER_PORT'] = str(port)
+
+def _initialise_tpu_four_chip(rank: int) -> None:
+    os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '2,2,1'
+    os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
+    if rank != 0:
+        raise ValueError('Rank must be 0.')
+    os.environ['TPU_VISIBLE_DEVICES'] = '0,1,2,3'
+
+def _initialise_tpu_full(rank: int) -> None:
+    if rank != 0:
+        raise ValueError('Rank must be 0.')
+
+def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int=0) -> None:
     os.environ['JAX_PLATFORMS'] = ''
 
-    if accelerator_type == 'v4-16':
-        if n_devices == 1:
-            port = _find_free_port()
-            os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '1,1,1'
-            os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
-            if rank not in (0, 1, 2, 3):
-                raise ValueError('Rank must be within 0-3.')
-            os.environ['TPU_VISIBLE_DEVICES'] = str(rank)
-            os.environ['TPU_MESH_CONTROLLER_ADDRESS'] = f'localhost:{port}'
-            os.environ['TPU_MESH_CONTROLLER_PORT'] = str(port)
-        elif n_devices == 2:
-            port = _find_free_port()
-            os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '1,2,1'
-            os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
-            if rank not in (0, 1):
-                raise ValueError('Rank must be either 0 or 1.')
-            os.environ['TPU_VISIBLE_DEVICES'] = ('0,1', '2,3')[rank]
-            os.environ['TPU_MESH_CONTROLLER_ADDRESS'] = f'localhost:{port}'
-            os.environ['TPU_MESH_CONTROLLER_PORT'] = str(port)
-        elif n_devices == 4:
-            os.environ['TPU_CHIPS_PER_HOST_BOUNDS'] = '2,2,1'
-            os.environ['TPU_HOST_BOUNDS'] = '1,1,1'
-            if rank != 0:
-                raise ValueError('Rank must be 0.')
-            os.environ['TPU_VISIBLE_DEVICES'] = '0,1,2,3'
-        elif n_devices == 8 or n_devices is None:
-            if rank != 0:
-                raise ValueError('Rank must be 0.')
+    if accelerator_type == 'v3-8':
+        if n_devices == 2: _initialise_tpu_one_chip(rank)
+        elif n_devices == 4: _initialise_tpu_two_chip(rank)
+        elif n_devices == 8 or n_devices is None: _initialise_tpu_full(rank)
+        else:
+            raise ValueError(f'Invalid value `n_devices`: {n_devices}')
+    elif accelerator_type == 'v4-16':
+        if n_devices == 1: _initialise_tpu_one_chip(rank)
+        elif n_devices == 2: _initialise_tpu_two_chip(rank)
+        elif n_devices == 4: _initialise_tpu_four_chip(rank)
+        elif n_devices == 8 or n_devices is None: _initialise_tpu_full(rank)
         else:
             raise ValueError(f'Invalid value `n_devices`: {n_devices}')
     else:
-        raise NotImplementedError('Only the initialisation on Cloud TPU v4-16 is supported.')
+        raise NotImplementedError('Only the initialisation on Cloud TPU v3-8 and v4-16 is supported.')
 
     _post_init_general()

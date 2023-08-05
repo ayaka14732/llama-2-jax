@@ -2,12 +2,11 @@ from functools import partial
 import jax
 from jax import Array
 import jax.random as rand
-from typing import Optional
 
 from .ModelConfig import ModelConfig
 
 @partial(jax.jit, static_argnames=('model_config',))
-def dropout(x: Array, *, key: Optional[rand.KeyArray], model_config: ModelConfig) -> Array:
+def forward_dropout(x: Array, *, key: rand.KeyArray | None, model_config: ModelConfig) -> Array:
     if model_config.dropout_rate is None:  # should disable dropout
         return x
 

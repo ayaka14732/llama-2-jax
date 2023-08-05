@@ -4,7 +4,7 @@ from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
 import numpy as np
 from types import EllipsisType
 
-def shard_array_to_multihost(arr: Array, axis: int | EllipsisType) -> Array:
+def shard_array(arr: Array, axis: int | EllipsisType) -> Array:
     shape = arr.shape
     devices: np.ndarray = np.array(jax.devices())
 

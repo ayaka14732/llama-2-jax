@@ -1,11 +1,11 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple
 
 class ModelConfig(NamedTuple):
     d_ff: int
     d_k: int
     d_model: int
     d_v: int
-    dropout_rate: Optional[float]
+    dropout_rate: float | None
     n_heads_kv: int
     n_layers: int
     n_rep_kv: int

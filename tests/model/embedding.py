@@ -6,7 +6,8 @@ import torch
 import torch.nn as tnn
 
 from lib.array_utils import pt2jax
-from lib.model import model_config_llama1_7B, embedding
+from lib.model import model_config_llama1_7B
+from lib.model.embedding import forward_embedding
 
 vocab_size = 12
 d_model = 2
@@ -22,5 +23,5 @@ x_jax = pt2jax(x_pt).astype(jnp.uint16)
 
 y_pt = embedding_pt(x_pt)
 y_jax = pt2jax(y_pt)
-y_hat_jax = embedding(params_jax, x_jax)
+y_hat_jax = forward_embedding(params_jax, x_jax)
 assert jnp.allclose(y_jax, y_hat_jax)

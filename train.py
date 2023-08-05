@@ -10,22 +10,22 @@ import optax
 import time
 from transformers import LlamaTokenizer
 from tqdm import tqdm
-from typing import Any, Callable, Optional
+from typing import Any, Callable
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, llama_model, model_config_llama2_7B
-from lib.multihost_utils import shard_model_params_to_multihost
+from lib.model import Llama, forward_llama_model, model_config_llama2_7B
+from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params
 from lib.proc_init_utils import initialise_tpu
 
-optimize: Optional[Callable]
+optimize: Callable | None
 
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    outputs = llama_model(params.model, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
+    outputs = forward_llama_model(params.model, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     logits = outputs @ params.lm_head
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
@@ -66,7 +66,7 @@ def main() -> None:
 
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
-    params = shard_model_params_to_multihost(params)
+    params = shard_model_params(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 

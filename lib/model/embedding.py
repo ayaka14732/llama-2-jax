@@ -12,5 +12,5 @@ def init_embedding(*, key: rand.KeyArray, model_config: ModelConfig) -> Array:
     upper = 1. / math.sqrt(model_config.d_model)
     return rand.truncated_normal(key, -upper, upper, (model_config.vocab_size, model_config.d_model))
 
-def embedding(params: Array, x: Array) -> Array:
+def forward_embedding(params: Array, x: Array) -> Array:
     return params[x]

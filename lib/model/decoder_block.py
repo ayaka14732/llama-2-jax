@@ -3,13 +3,13 @@ import jax
 from jax import Array
 import jax.random as rand
 import math
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple
 
 from ..rand_utils import split_key_nullable
-from .attention import Attention, attention, check_attention, init_attention
+from .attention import Attention, check_attention, forward_attention, init_attention
 from .ModelConfig import ModelConfig
-from .dropout import dropout
-from .rms_norm import check_rms_norm, init_rms_norm, rms_norm
+from .dropout import forward_dropout
+from .rms_norm import check_rms_norm, forward_rms_norm, init_rms_norm
 
 class DecoderBlock(NamedTuple):
     input_norm: Any  # Array
@@ -46,21 +46,21 @@ def init_decoder_block(*, key: rand.KeyArray, model_config: ModelConfig) -> Deco
     return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: Optional[rand.KeyArray], model_config: ModelConfig) -> Array:
+def forward_decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: rand.KeyArray | None, model_config: ModelConfig) -> Array:
     key0, key1, key2 = split_key_nullable(key, num=3)
 
     seq_ = seq
-    seq = rms_norm(params.input_norm, seq, model_config=model_config)
-    seq = attention(params.attention, seq, seq, attn_mask, model_config=model_config)
-    seq = dropout(seq, key=key0, model_config=model_config)
+    seq = forward_rms_norm(params.input_norm, seq, model_config=model_config)
+    seq = forward_attention(params.attention, seq, seq, attn_mask, model_config=model_config)
+    seq = forward_dropout(seq, key=key0, model_config=model_config)
     seq += seq_
 
     seq_ = seq
-    seq = rms_norm(params.post_attn_norm, seq, model_config=model_config)
+    seq = forward_rms_norm(params.post_attn_norm, seq, model_config=model_config)
     ff = jax.nn.silu(seq @ params.gate_proj) * (seq @ params.up_proj)
-    ff = dropout(ff, key=key1, model_config=model_config)
+    ff = forward_dropout(ff, key=key1, model_config=model_config)
     seq = ff @ params.down_proj
-    seq = dropout(seq, key=key2, model_config=model_config)
+    seq = forward_dropout(seq, key=key2, model_config=model_config)
     seq += seq_
 
     return seq

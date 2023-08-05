@@ -7,7 +7,8 @@ import torch.nn as tnn
 from transformers.models.llama.modeling_llama import LlamaRMSNorm
 
 from lib.array_utils import pt2jax
-from lib.model import model_config_llama1_7B, rms_norm
+from lib.model import model_config_llama1_7B
+from lib.model.rms_norm import forward_rms_norm
 
 batch_size = 2
 seq_len = 9
@@ -23,5 +24,5 @@ x_jax = pt2jax(x_pt)
 
 y_pt = rms_norm_pt(x_pt)
 y_jax = pt2jax(y_pt)
-y_hat_jax = rms_norm(params_jax, x_jax, model_config=model_config_llama1_7B)
+y_hat_jax = forward_rms_norm(params_jax, x_jax, model_config=model_config_llama1_7B)
 assert jnp.allclose(y_jax, y_hat_jax)

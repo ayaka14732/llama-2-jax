@@ -10,7 +10,7 @@ from lib.dataloader import LlamaDataLoader
 from lib.generation import TopPGenerationConfig, top_p
 from lib.gsm_data import GSMDataset, gsm_collate_fn_test
 from lib.model import model_config_llama2_7B
-from lib.multihost_utils import shard_model_params_to_multihost
+from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params
 from lib.proc_init_utils import initialise_tpu
 from lib.seeding import BEST_INTEGER, HASHED_BUDDHA
@@ -29,7 +29,7 @@ def main() -> None:
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params('glowing-terrain-95.pickle')
-    params = shard_model_params_to_multihost(params)
+    params = shard_model_params(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')
 

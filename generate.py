@@ -11,7 +11,7 @@ from transformers import LlamaTokenizer
 # from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
 from lib.model import model_config_llama2_7B
-from lib.multihost_utils import shard_array_to_multihost, shard_model_params_to_multihost
+from lib.multihost_utils import shard_array, shard_model_params
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER
 
@@ -34,7 +34,7 @@ def main() -> None:
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')
-    params = shard_model_params_to_multihost(params)
+    params = shard_model_params(params)
 
     # top_k_config = TopKGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_k=10)
     top_p_config = TopPGenerationConfig(eos_token_id=tokenizer.eos_token_id, max_length=128, top_p=0.9)
@@ -43,8 +43,8 @@ def main() -> None:
     seq = inputs.input_ids.astype(jnp.uint16)
     attn_mask = inputs.attention_mask.astype(jnp.bool_)
 
-    seq = shard_array_to_multihost(seq, ...)
-    attn_mask = shard_array_to_multihost(attn_mask, ...)
+    seq = shard_array(seq, ...)
+    attn_mask = shard_array(attn_mask, ...)
 
     key, subkey = rand.split(key)
     config_llama2_7B_ = model_config_llama2_7B._replace(dropout_rate=None)

@@ -6,7 +6,7 @@ import torch
 from transformers import LlamaConfig, LlamaModel
 
 from lib.array_utils import pt2jax
-from lib.model import check_llama_model, model_config_llama1_7B, llama_model
+from lib.model import check_llama_model, forward_llama_model, model_config_llama1_7B
 from lib.param_utils import convert_llama_model
 from lib.seeding import BEST_INTEGER
 
@@ -38,7 +38,7 @@ mask_jax_1d = pt2jax(mask_pt_1d)
 
 y_pt = llama_pt(input_ids=seq_pt, attention_mask=mask_pt_1d)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = llama_model(params_jax, seq_jax, mask_jax_1d, model_config=config_jax)
+y_hat_jax = forward_llama_model(params_jax, seq_jax, mask_jax_1d, model_config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

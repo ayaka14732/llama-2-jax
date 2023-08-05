@@ -7,7 +7,8 @@ from transformers import LlamaConfig
 from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 
 from lib.array_utils import pt2jax
-from lib.model import model_config_llama1_7B, decoder_block
+from lib.model import model_config_llama1_7B
+from lib.model.decoder_block import forward_decoder_block
 from lib.param_utils import convert_decoder_block
 from lib.seeding import BEST_INTEGER
 
@@ -43,7 +44,7 @@ mask_pt = torch.where(mask_pt, 0, -10000.)
 
 y_pt = decoder_block_pt(hidden_states=seq_pt, attention_mask=mask_pt)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = decoder_block(params_jax, seq_jax, mask_jax, model_config=config_jax)
+y_hat_jax = forward_decoder_block(params_jax, seq_jax, mask_jax, model_config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

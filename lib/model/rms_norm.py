@@ -14,7 +14,7 @@ def init_rms_norm(*, model_config: ModelConfig) -> Array:
 
 # Taken from https://github.com/ztjhz/t5-jax/blob/main/model/layer_norm.py#L23
 @partial(jax.jit, static_argnames=('model_config',))
-def rms_norm(params: Array, x: Array, *, model_config: ModelConfig) -> Array:
+def forward_rms_norm(params: Array, x: Array, *, model_config: ModelConfig) -> Array:
     x_rms = jnp.sqrt((x * x).mean(axis=-1, keepdims=True) + model_config.rms_norm_eps)
     y = x / x_rms * params
     return y

@@ -1,2 +1,2 @@
-from .shard_array_to_multihost import shard_array_to_multihost
-from .shard_model_params_to_multihost import shard_model_params_to_multihost
+from .shard_array import shard_array
+from .shard_model_params import shard_model_params

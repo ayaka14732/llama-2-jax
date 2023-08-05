@@ -1,6 +1,8 @@
-from ..model import Attention, Decoder, Llama, LlamaModel
+from ..model import Llama, LlamaModel
+from ..model.attention import Attention
+from ..model.decoder import Decoder
 from ..tree_utils import tree_apply
-from .shard_array_to_multihost import shard_array_to_multihost
+from .shard_array import shard_array
 
 sharding_mp = Llama(
     model=LlamaModel(
@@ -18,5 +20,5 @@ sharding_mp = Llama(
     lm_head=...,
 )
 
-def shard_model_params_to_multihost(params: Llama) -> Llama:
-    return tree_apply(shard_array_to_multihost, params, sharding_mp)
+def shard_model_params(params: Llama) -> Llama:
+    return tree_apply(shard_array, params, sharding_mp)

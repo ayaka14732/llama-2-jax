@@ -7,7 +7,8 @@ from transformers import LlamaConfig
 from transformers.models.llama.modeling_llama import LlamaAttention
 
 from lib.array_utils import pt2jax
-from lib.model import attention, model_config_llama1_7B
+from lib.model import model_config_llama1_7B
+from lib.model.attention import forward_attention
 from lib.param_utils import convert_attention
 from lib.seeding import BEST_INTEGER
 
@@ -42,7 +43,7 @@ mask_pt = torch.where(mask_pt, 0, -10000.)
 
 y_pt = attention_pt(hidden_states=seq_pt, attention_mask=mask_pt)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = attention(params_jax, seq_jax, seq_jax, mask_jax, model_config=config_jax)
+y_hat_jax = forward_attention(params_jax, seq_jax, seq_jax, mask_jax, model_config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

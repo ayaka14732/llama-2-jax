@@ -1,6 +1,6 @@
-from ..model import Llama, LlamaModel
-from ..model.attention import Attention
-from ..model.decoder import Decoder
+from ..llama import Llama, LlamaModel
+from ..llama.attention import Attention
+from ..llama.decoder import Decoder
 from ..tree_utils import tree_apply
 from .shard_array import shard_array
 

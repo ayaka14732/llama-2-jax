@@ -5,9 +5,9 @@ from transformers import LlamaConfig, LlamaForCausalLM, LlamaModel as LlamaModel
 from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecoderLayer, LlamaMLP, LlamaRMSNorm
 
 from lib.array_utils import jax2pt
-from lib.model import Llama, LlamaModel
-from lib.model.attention import Attention
-from lib.model.decoder_block import DecoderBlock
+from lib.llama import Llama, LlamaModel
+from lib.llama.attention import Attention
+from lib.llama.decoder_block import DecoderBlock
 from lib.tree_utils import unstack_leaves
 
 def convert_back_embedding(x: Array) -> tnn.Embedding:

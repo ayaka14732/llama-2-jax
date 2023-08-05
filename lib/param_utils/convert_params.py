@@ -5,9 +5,9 @@ from transformers import LlamaForCausalLM, LlamaModel as LlamaModelPt
 from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecoderLayer
 
 from lib.array_utils import pt2jax
-from lib.model import Llama, LlamaModel, ModelConfig
-from lib.model.attention import Attention
-from lib.model.decoder_block import DecoderBlock
+from lib.llama import Llama, LlamaModel, ModelConfig
+from lib.llama.attention import Attention
+from lib.llama.decoder_block import DecoderBlock
 from lib.tree_utils import stack_leaves
 
 def convert_proj(x: tnn.Linear) -> Array:

@@ -1,10 +1,12 @@
+from functools import partial
+import jax
 from jax import Array
 import jax.random as rand
 import math
 from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
-from .llama_model import LlamaModel, check_llama_model, init_llama_model
+from .llama_model import LlamaModel, check_llama_model, forward_llama_model, init_llama_model
 
 class Llama(NamedTuple):
     model: LlamaModel
@@ -24,5 +26,8 @@ def init_llama(*, key: rand.KeyArray, model_config: ModelConfig) -> Llama:
     lm_head = rand.truncated_normal(key1, -upper, upper, (model_config.d_model, model_config.vocab_size))
     return Llama(model, lm_head)
 
-def forward_llama():
-    ...
+@partial(jax.jit, static_argnames=('model_config'))
+def forward_llama(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
+    outputs = forward_llama_model(params.model, seq, attn_mask, key=key, model_config=model_config)
+    logits =  outputs @ params.lm_head
+    return logits

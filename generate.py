@@ -10,7 +10,7 @@ from transformers import LlamaTokenizer
 
 # from lib.generation import TopKGenerationConfig, top_k
 from lib.generation import TopPGenerationConfig, top_p
-from lib.model import model_config_llama2_7B
+from lib.llama import model_config_llama2_7B
 from lib.multihost_utils import shard_array, shard_model_params
 from lib.param_utils import load_params
 from lib.seeding import BEST_INTEGER

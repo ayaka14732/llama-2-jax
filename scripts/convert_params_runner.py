@@ -6,7 +6,7 @@ import jax
 import jax.numpy as jnp
 from transformers import LlamaForCausalLM
 
-from lib.model import check_llama, model_config_llama1_7B, model_config_llama2_70B, model_config_llama2_7B
+from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_70B, model_config_llama2_7B
 from lib.param_utils import convert_llama, save_params
 
 pairs = {

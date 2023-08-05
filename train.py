@@ -14,8 +14,8 @@ from typing import Any, Callable
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
+from lib.llama import Llama, forward_llama, model_config_llama2_7B
 from lib.loss import cross_entropy_loss
-from lib.model import Llama, forward_llama_model, model_config_llama2_7B
 from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params
 from lib.proc_init_utils import initialise_tpu
@@ -25,8 +25,7 @@ optimize: Callable | None
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    outputs = forward_llama_model(params.model, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
-    logits = outputs @ params.lm_head
+    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 

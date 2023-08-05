@@ -24,17 +24,17 @@ The objectives of this project are threefold:
 ## Features
 
 - [x] Parameter conversion
-    - [x] [Convert from Hugging Face](lib/param_utils/convert_params.py)
-    - [x] [Convert to Hugging Face](lib/param_utils/convert_back_params.py)
+    - [x] [Hugging Face to JAX](lib/param_utils/convert_params.py)
+    - [x] [JAX to Hugging Face](lib/param_utils/convert_back_params.py)
 - [x] Model architecture
-    - [x] [Dropout](lib/model/dropout.py)
-    - [x] [RMS Norm](lib/model/rms_norm.py)
-    - [x] [Embedding](lib/model/embedding.py)
-    - [x] [Rotary embedding](lib/model/rotary_embedding.py)
-    - [x] [Attention](lib/model/attention.py)
-    - [x] [Decoder block](lib/model/decoder_block.py)
-    - [x] [Decoder](lib/model/decoder.py)
-    - [x] [Llama Model](lib/model/llama_model.py)
+    - [x] [Dropout](lib/llama/dropout.py)
+    - [x] [RMS Norm](lib/llama/rms_norm.py)
+    - [x] [Embedding](lib/llama/embedding.py)
+    - [x] [Rotary embedding](lib/llama/rotary_embedding.py)
+    - [x] [Attention](lib/llama/attention.py)
+    - [x] [Decoder block](lib/llama/decoder_block.py)
+    - [x] [Decoder](lib/llama/decoder.py)
+    - [x] [Llama Model](lib/llama/llama_model.py)
 - [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
 - [x] Logits processing
     - [x] [Bias](lib/logits_processing/bias.py)

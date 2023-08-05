@@ -6,7 +6,7 @@ import jax.random as rand
 from operator import getitem
 from typing import NamedTuple
 
-from ..model import ModelConfig, Llama, llama_model
+from ..llama import ModelConfig, Llama, forward_llama_model
 from ._utils import while_loop
 
 class _TopPGenerationState(NamedTuple):
@@ -26,7 +26,7 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: M
     key, seq, attn_mask, last_positions, last_tokens, finished = state
     eos_token_id, max_length, top_p = top_p_config
 
-    outputs = llama_model(params.model, seq, attn_mask, key=None, model_config=model_config)
+    outputs = forward_llama_model(params.model, seq, attn_mask, key=None, model_config=model_config)
     logits = jax.vmap(getitem)(outputs, last_positions) @ params.lm_head
 
     batch_size, vocab_size = logits.shape

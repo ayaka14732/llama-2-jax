@@ -139,22 +139,11 @@ python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llam
 
 Llama 2:
 
-You can request to access the Llama weights from [the official website](https://ai.meta.com/llama/).
-
-```sh
-cd .. && git clone --depth=1 https://github.com/facebookresearch/llama llama-meta
-cd llama-meta
-chmod +x download.sh
-./download.sh
-
-ln -sf llama-2-7b 7Bf
-python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 7Bf --output_dir ../llama-weights/llama2-7B
-
-ln -sf llama-2-70b 70Bf
-python ../llama-2-jax/venv/lib/python3.11/site-packages/transformers/models/llama/convert_llama_weights_to_hf.py --input_dir ../llama-meta --model_size 70Bf --output_dir ../llama-weights/llama2-70B
-```
+You can request to access the Llama weights from [the official website](https://ai.meta.com/llama/). After your request is approved, you will automatically get access to the Hugging Face Llama 2 models. You can verify that the models are accessible by trying to access the [Llama 2 7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) version.
 
 ### Convert parameters
+
+If you need to convert Llama 2 models, you need to first log in using `huggingface-cli login`.
 
 ```sh
 python scripts/convert_params_runner.py llama1-7B

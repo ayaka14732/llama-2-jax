@@ -11,8 +11,8 @@ from lib.param_utils import convert_llama, save_params
 
 pairs = {
     'llama1-7B': ('../llama-weights/llama1-7B', model_config_llama1_7B),
-    'llama2-7B': ('../llama-weights/llama2-7B', model_config_llama2_7B),
-    'llama2-70B': ('../llama-weights/llama2-70B', model_config_llama2_70B),
+    'llama2-7B': ('meta-llama/Llama-2-7b-hf', model_config_llama2_7B),
+    'llama2-70B': ('meta-llama/Llama-2-70b-hf', model_config_llama2_70B),
 }
 
 def convert(target: str) -> None:

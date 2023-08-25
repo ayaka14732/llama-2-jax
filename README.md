@@ -74,7 +74,7 @@ pip install -U wheel
 
 ### Install the proper version of JAX
 
-You need to follow the installation instructions on JAX's [offical GitHub page](https://github.com/google/jax#installation).
+You need to follow the installation instructions on JAX's [official GitHub page](https://github.com/google/jax#installation).
 
 TPU:
 
@@ -191,7 +191,17 @@ On TPU pods, the command is:
 
 ## Model Configurations
 
-| Name | Parameters | `vocab_size` | `n_layers` | `n_heads_kv` | `n_rep_kv` | `d_model` | `d_ff` |
+- B: batch_size
+- K/V: d_k/d_v
+- F: d_ff
+- M: d_model
+- R: n_rep_kv
+- H: n_heads_kv
+- L/S/D: seq_len/src_seq_len/dst_seq_len
+- C: vocab_size
+- N: n_layers
+
+| Name | Parameters | _C_ | _N_ | _H_ | _r_ | _M_ | _F_ |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | LLaMA 1 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
 | LLaMA 1 13B | | 32000 | 40 | 40 | 1 | 5120 | |

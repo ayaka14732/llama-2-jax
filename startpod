@@ -1,7 +1,0 @@
-#!/bin/bash
-
-while read p; do
-  ssh "$p" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; . venv/bin/activate; $@" &
-done < external-ips.txt
-rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; . venv/bin/activate; "$@"
-wait

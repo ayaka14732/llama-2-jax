@@ -1,0 +1,53 @@
+#!/bin/bash
+
+PODIPS_FILE=~/podips.txt
+EXCLUDE_HOST=false
+DRY_RUN=false
+NO_CLEAN_UP=false
+
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --exclude-host) EXCLUDE_HOST=true;;
+        --dry-run) DRY_RUN=true;;
+        --no-clean-up) NO_CLEAN_UP=true;;
+        --) shift; break;;
+        *) echo "Unknown flag: $1"; exit 1;;
+    esac
+    shift
+done
+
+while read ip; do
+    [[ $ip =~ ^#.* ]] && continue
+
+    if $DRY_RUN; then
+        if $NO_CLEAN_UP; then
+            python3.11 -c "import os; print(os.sys.argv)" ssh "$ip" "cd $PWD; $@"
+        else
+            python3.11 -c "import os; print(os.sys.argv)" ssh "$ip" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@"
+        fi
+    else
+        if $NO_CLEAN_UP; then
+            ssh "$ip" "cd $PWD; $@" &
+        else
+            ssh "$ip" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@" &
+        fi
+    fi
+done < $PODIPS_FILE
+
+if ! $EXCLUDE_HOST; then
+    if $DRY_RUN; then
+        if $NO_CLEAN_UP; then
+            python3.11 -c "import os; print(os.sys.argv)" "cd $PWD; $@"
+        else
+            python3.11 -c "import os; print(os.sys.argv)" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@"
+        fi
+    else
+        if $NO_CLEAN_UP; then
+            "cd $PWD; $@" &
+        else
+            (cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@ &)
+        fi
+    fi
+fi
+
+wait

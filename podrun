@@ -14,8 +14,9 @@ def get_ips():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--cwd', action='store_true')
     parser.add_argument('-i', '--include-host', action='store_true')
+    parser.add_argument('-c', '--clean-up', action='store_true')
+    parser.add_argument('-w', '--cwd', action='store_true')
     parser.add_argument('command', nargs=argparse.ONE_OR_MORE)
     args = parser.parse_args()
 
@@ -26,6 +27,9 @@ def main():
 
     commands = args.command
     command = " ".join(shell_escape(command) for command in commands)
+
+    if args.clean_up:
+        command = f'rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
 
     if args.cwd:
         cwd = os.getcwd()

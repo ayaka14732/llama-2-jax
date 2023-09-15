@@ -128,7 +128,7 @@ python generate.py
 On TPU pods, the command is:
 
 ```sh
-./podrun python generate.py
+./podrun -icw python generate.py
 ```
 
 ## Training
@@ -150,7 +150,7 @@ python train.py
 On TPU pods, the command is:
 
 ```sh
-./podrun python train.py
+./podrun -icw python train.py
 ```
 
 ## Model Configurations

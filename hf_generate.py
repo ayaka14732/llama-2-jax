@@ -5,7 +5,8 @@ import jax.numpy as jnp
 import torch
 from transformers import LlamaConfig, LlamaTokenizer
 
-from lib.param_utils import convert_back_llama, load_params
+from lib.llama_params import convert_back_llama
+from lib.param_utils import load_params
 
 config = LlamaConfig.from_pretrained('../llama-weights/llama2-7B')
 tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')

@@ -72,6 +72,13 @@ def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int=
         elif n_devices == 8 or n_devices is None: _initialise_tpu_full(rank)
         else:
             raise ValueError(f'Invalid value `n_devices`: {n_devices}')
+    elif accelerator_type in ('v3-32', 'v3-256'):
+        if n_devices == 2: _initialise_tpu_one_chip(rank)
+        elif n_devices == 4: _initialise_tpu_two_chip(rank)
+        elif n_devices == 8: _initialise_tpu_four_chip(rank)
+        elif n_devices is None: _initialise_tpu_full(rank)
+        else:
+            raise ValueError(f'Invalid value `n_devices`: {n_devices}')
     elif accelerator_type == 'v4-16':
         if n_devices == 1: _initialise_tpu_one_chip(rank)
         elif n_devices == 2: _initialise_tpu_two_chip(rank)

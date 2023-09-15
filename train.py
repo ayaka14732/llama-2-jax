@@ -12,12 +12,13 @@ from transformers import LlamaTokenizer
 from tqdm import tqdm
 from typing import Any, Callable
 
+from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
-from lib.gsm_data import GSMDataset, TrainData, gsm_collate_fn_train
-from lib.llama import Llama, forward_llama, model_config_llama2_7B
+from lib.gsm_data import GSMDataset, gsm_collate_fn_train
+from lib.llama import Llama, forward_llama, init_llama, model_config_dummy
 from lib.loss import cross_entropy_loss
 from lib.multihost_utils import shard_model_params
-from lib.param_utils import load_params, save_params
+from lib.param_utils import save_params
 from lib.proc_init_utils import initialise_tpu
 
 optimize: Callable | None
@@ -25,7 +26,7 @@ optimize: Callable | None
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
+    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_dummy)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 
@@ -45,10 +46,10 @@ def main() -> None:
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
-    n_epochs = 7
+    n_epochs = 2
     seed = 3407
 
-    initialise_tpu('v4-16', n_devices=8, rank=0)
+    initialise_tpu('v3-32')
     is_process_0 = jax.process_index() == 0
     cpu_device = jax.devices('cpu')[0]
 
@@ -58,13 +59,15 @@ def main() -> None:
         initialise_tracking()
 
     key = rand.PRNGKey(seed)
-    tokenizer = LlamaTokenizer.from_pretrained('../llama-weights/llama2-7B')
+    tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
     with jax.default_device(cpu_device):
-        params = load_params('llama2-7B.pickle')
+        # params = load_params('llama2-7B.pickle')
+        key, subkey = rand.split(key)
+        params = init_llama(key=subkey, model_config=model_config_dummy)
     params = shard_model_params(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')

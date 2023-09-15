@@ -2,7 +2,7 @@
 
 This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461).
 
-## Similar Projects
+## Related Projects
 
 - [hyunwoongko/transformer](https://github.com/hyunwoongko/transformer): PyTorch implementation of the original Transformer
 - [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax): JAX implementation of BART-base
@@ -45,7 +45,7 @@ The objectives of this project are threefold:
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
-    - [ ] Optimisation
+    - [ ] KV Cache
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [x] Inference
 - [x] Training
@@ -74,49 +74,13 @@ pip install -U wheel
 
 ### Install the proper version of JAX
 
-You need to follow the installation instructions on JAX's [offical GitHub page](https://github.com/google/jax#installation).
-
-TPU:
-
-```sh
-pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-```
-
-CUDA 12:
-
-```sh
-pip install "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-```
-
-CUDA 11.8:
-
-```sh
-pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-```
+You need to follow the installation instructions on JAX's [official GitHub page](https://github.com/google/jax#installation).
 
 ### Install the proper version of PyTorch
 
 Typically, you only need to install the CPU version of PyTorch since we perform most of the computation using JAX. However, it's worth noting that the current codebase's generation process is not fully optimised yet. To expedite the inference, one effective approach would involve converting the model back to Hugging Face format and running the inference in PyTorch.
 
 To install PyTorch, you can follow the [official installation guide](https://pytorch.org/get-started/locally/).
-
-CPU:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
-```
-
-CUDA 12:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu121
-```
-
-CUDA 11.8:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118
-```
 
 ### Install other dependencies
 
@@ -164,7 +128,7 @@ python generate.py
 On TPU pods, the command is:
 
 ```sh
-./startpod python generate.py
+./podrun -icw python generate.py
 ```
 
 ## Training
@@ -186,12 +150,22 @@ python train.py
 On TPU pods, the command is:
 
 ```sh
-./startpod python train.py
+./podrun -icw python train.py
 ```
 
 ## Model Configurations
 
-| Name | Parameters | `vocab_size` | `n_layers` | `n_heads_kv` | `n_rep_kv` | `d_model` | `d_ff` |
+- B: batch_size
+- K/V: d_k/d_v
+- F: d_ff
+- M: d_model
+- R: n_rep_kv
+- H: n_heads_kv
+- L/S/D: seq_len/src_seq_len/dst_seq_len
+- C: vocab_size
+- N: n_layers
+
+| Name | Parameters | _C_ | _N_ | _H_ | _r_ | _M_ | _F_ |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | LLaMA 1 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
 | LLaMA 1 13B | | 32000 | 40 | 40 | 1 | 5120 | |
@@ -321,7 +295,7 @@ lm_head: (8192, 32000)
 ## Findings
 
 - LLaMA utilises rotary positional embeddings.
-- There is no bias in the Q, K, V matrices and the linear projections in the FFNs, which is the same as the original transformer, but different from BERT and BART.
+- There is no bias in the _Q_, _K_, _V_ matrices and the linear projections in the FFNs, which is the same as the original transformer, but different from BERT and BART.
 - In Llama models, each FFN has 3 linear projections, while in BART there are only 2.
 - There is no dropout in the original LLaMA implementation.
 - Llama 2 70B utilises Grouped-Query Attention (GQA).

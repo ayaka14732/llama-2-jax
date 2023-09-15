@@ -16,7 +16,7 @@ class ModelConfig(NamedTuple):
     vocab_size: int
 
 model_config_dummy = ModelConfig(
-    d_ff=17,
+    d_ff=32,
     d_k=32,
     d_model=15,
     d_v=16,
@@ -28,7 +28,7 @@ model_config_dummy = ModelConfig(
     token_id_bos=1,
     token_id_eos=2,
     token_id_pad=0,
-    vocab_size=5,
+    vocab_size=32000,
 )
 
 model_config_llama1_7B = ModelConfig(

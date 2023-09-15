@@ -9,7 +9,7 @@ from transformers.models.llama.modeling_llama import LlamaAttention
 from lib.array_utils import pt2jax
 from lib.llama import model_config_llama1_7B
 from lib.llama.attention import forward_attention
-from lib.param_utils import convert_attention
+from lib.llama_params.convert_params import convert_attention
 from lib.seeding import BEST_INTEGER
 
 batch_size = 2

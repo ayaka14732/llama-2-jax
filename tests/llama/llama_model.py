@@ -7,7 +7,7 @@ from transformers import LlamaConfig, LlamaModel
 
 from lib.array_utils import pt2jax
 from lib.llama import check_llama_model, forward_llama_model, model_config_llama1_7B
-from lib.param_utils import convert_llama_model
+from lib.llama_params.convert_params import convert_llama_model
 from lib.seeding import BEST_INTEGER
 
 batch_size = 2

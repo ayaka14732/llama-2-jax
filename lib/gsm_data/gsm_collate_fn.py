@@ -1,14 +1,8 @@
 from itertools import chain, repeat
-from jax import Array
 import jax.numpy as jnp
 from transformers import LlamaTokenizer
-from typing import NamedTuple
 
-class TrainData(NamedTuple):
-    seq: Array
-    seq_mask: Array
-    labels: Array
-    labels_mask: Array
+from ..data import TrainData, TestData
 
 def gsm_collate_fn_train(tokenizer: LlamaTokenizer, max_len: int, data_batch: list[tuple[str, str]]):
     bos_id = tokenizer.bos_token_id
@@ -52,11 +46,6 @@ def gsm_collate_fn_train(tokenizer: LlamaTokenizer, max_len: int, data_batch: li
     labels_mask_ = jnp.array(labels_mask_list, dtype=jnp.bool_)
 
     return TrainData(seq_, seq_mask_, labels_, labels_mask_)
-
-class TestData(NamedTuple):
-    seq: Array
-    seq_mask: Array
-    labels: list[str]
 
 def gsm_collate_fn_test(tokenizer: LlamaTokenizer, max_len: int, data_batch: list[tuple[str, str]]):
     bos_id = tokenizer.bos_token_id

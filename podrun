@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+
+import argparse
+import fabric
+import os
+
+# https://stackoverflow.com/a/13786877
+def shell_escape(arg):
+    return "'%s'" % (arg.replace(r"'", r"'\''"),)
+
+def get_ips():
+    with open(os.path.expanduser('~/podips.txt'), 'r') as f:
+        return [line.rstrip('\n') for line in f]
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--include-host', action='store_true')
+    parser.add_argument('-c', '--clean-up', action='store_true')
+    parser.add_argument('-w', '--cwd', action='store_true')
+    parser.add_argument('command', nargs=argparse.ONE_OR_MORE)
+    args = parser.parse_args()
+
+    hosts = get_ips()
+
+    if args.include_host:
+        hosts.append('127.0.0.1')
+
+    commands = args.command
+    command = " ".join(shell_escape(command) for command in commands)
+
+    if args.clean_up:
+        command = f'rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
+
+    if args.cwd:
+        cwd = os.getcwd()
+        command = f'cd {cwd}; {command}'
+
+    with fabric.ThreadingGroup(*hosts) as group:
+        group.run(command)
+
+if __name__ == '__main__':
+    main()

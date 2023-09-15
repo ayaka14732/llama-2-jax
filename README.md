@@ -295,7 +295,7 @@ lm_head: (8192, 32000)
 ## Findings
 
 - LLaMA utilises rotary positional embeddings.
-- There is no bias in the Q, K, V matrices and the linear projections in the FFNs, which is the same as the original transformer, but different from BERT and BART.
+- There is no bias in the _Q_, _K_, _V_ matrices and the linear projections in the FFNs, which is the same as the original transformer, but different from BERT and BART.
 - In Llama models, each FFN has 3 linear projections, while in BART there are only 2.
 - There is no dropout in the original LLaMA implementation.
 - Llama 2 70B utilises Grouped-Query Attention (GQA).

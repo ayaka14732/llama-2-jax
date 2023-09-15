@@ -65,6 +65,7 @@ def main() -> None:
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
     with jax.default_device(cpu_device):
+        # params = load_params('llama2-7B.pickle')
         key, subkey = rand.split(key)
         params = init_llama(key=subkey, model_config=model_config_dummy)
     params = shard_model_params(params)

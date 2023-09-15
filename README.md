@@ -2,7 +2,7 @@
 
 This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461).
 
-## Similar Projects
+## Related Projects
 
 - [hyunwoongko/transformer](https://github.com/hyunwoongko/transformer): PyTorch implementation of the original Transformer
 - [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax): JAX implementation of BART-base
@@ -45,7 +45,7 @@ The objectives of this project are threefold:
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
-    - [ ] Optimisation
+    - [ ] KV Cache
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [x] Inference
 - [x] Training
@@ -76,47 +76,11 @@ pip install -U wheel
 
 You need to follow the installation instructions on JAX's [official GitHub page](https://github.com/google/jax#installation).
 
-TPU:
-
-```sh
-pip install "jax[tpu]" -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
-```
-
-CUDA 12:
-
-```sh
-pip install "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-```
-
-CUDA 11.8:
-
-```sh
-pip install "jax[cuda11_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-```
-
 ### Install the proper version of PyTorch
 
 Typically, you only need to install the CPU version of PyTorch since we perform most of the computation using JAX. However, it's worth noting that the current codebase's generation process is not fully optimised yet. To expedite the inference, one effective approach would involve converting the model back to Hugging Face format and running the inference in PyTorch.
 
 To install PyTorch, you can follow the [official installation guide](https://pytorch.org/get-started/locally/).
-
-CPU:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
-```
-
-CUDA 12:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu121
-```
-
-CUDA 11.8:
-
-```sh
-pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cu118
-```
 
 ### Install other dependencies
 

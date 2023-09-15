@@ -1,53 +1,38 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-PODIPS_FILE=~/podips.txt
-EXCLUDE_HOST=false
-DRY_RUN=false
-NO_CLEAN_UP=false
+import argparse
+import fabric
+import os
 
-while [[ "$#" -gt 0 ]]; do
-    case $1 in
-        --exclude-host) EXCLUDE_HOST=true;;
-        --dry-run) DRY_RUN=true;;
-        --no-clean-up) NO_CLEAN_UP=true;;
-        --) shift; break;;
-        *) echo "Unknown flag: $1"; exit 1;;
-    esac
-    shift
-done
+# https://stackoverflow.com/a/13786877
+def shell_escape(arg):
+    return "'%s'" % (arg.replace(r"'", r"'\''"),)
 
-while read ip; do
-    [[ $ip =~ ^#.* ]] && continue
+def get_ips():
+    with open(os.path.expanduser('~/podips.txt'), 'r') as f:
+        return [line.rstrip('\n') for line in f]
 
-    if $DRY_RUN; then
-        if $NO_CLEAN_UP; then
-            python3.11 -c "import os; print(os.sys.argv)" ssh "$ip" "cd $PWD; $@"
-        else
-            python3.11 -c "import os; print(os.sys.argv)" ssh "$ip" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@"
-        fi
-    else
-        if $NO_CLEAN_UP; then
-            ssh "$ip" "cd $PWD; $@" &
-        else
-            ssh "$ip" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@" &
-        fi
-    fi
-done < $PODIPS_FILE
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--cwd', action='store_true')
+    parser.add_argument('-i', '--include-host', action='store_true')
+    parser.add_argument('command', nargs=argparse.ONE_OR_MORE)
+    args = parser.parse_args()
 
-if ! $EXCLUDE_HOST; then
-    if $DRY_RUN; then
-        if $NO_CLEAN_UP; then
-            python3.11 -c "import os; print(os.sys.argv)" "cd $PWD; $@"
-        else
-            python3.11 -c "import os; print(os.sys.argv)" "cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@"
-        fi
-    else
-        if $NO_CLEAN_UP; then
-            "cd $PWD; $@" &
-        else
-            (cd $PWD; rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; $@ &)
-        fi
-    fi
-fi
+    hosts = get_ips()
 
-wait
+    if args.include_host:
+        hosts.append('127.0.0.1')
+
+    commands = args.command
+    command = " ".join(shell_escape(command) for command in commands)
+
+    if args.cwd:
+        cwd = os.getcwd()
+        command = f'cd {cwd}; {command}'
+
+    with fabric.ThreadingGroup(*hosts) as group:
+        group.run(command)
+
+if __name__ == '__main__':
+    main()

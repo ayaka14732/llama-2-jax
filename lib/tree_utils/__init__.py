@@ -1,6 +1,5 @@
 import jax
 import jax.numpy as jnp
-from typing import Callable
 
 # https://docs.liesel-project.org/en/v0.1.4/_modules/liesel/goose/pytree.html#stack_leaves
 def stack_leaves(pytrees, axis: int=0):
@@ -14,7 +13,7 @@ def stack_leaves(pytrees, axis: int=0):
     Returns:
         The PyTree with its leaves stacked along the new axis.
     '''
-    return jax.tree_util.tree_map(lambda *xs: jnp.stack(xs, axis=axis), *pytrees)
+    return jax.tree_map(lambda *xs: jnp.stack(xs, axis=axis), *pytrees)
 
 # https://gist.github.com/willwhitney/dd89cac6a5b771ccff18b06b33372c75?permalink_comment_id=4634557#gistcomment-4634557
 def unstack_leaves(pytrees):
@@ -29,23 +28,3 @@ def unstack_leaves(pytrees):
     '''
     leaves, treedef = jax.tree_util.tree_flatten(pytrees)
     return [treedef.unflatten(leaf) for leaf in zip(*leaves, strict=True)]
-
-def tree_apply(func: Callable, *pytrees):
-    '''
-    Apply a function to the leaves of one or more PyTrees.
-
-    Args:
-        func (Callable): Function to apply to each leaf. It must take the same number of arguments as there are PyTrees.
-        pytrees: One or more PyTrees.
-
-    Returns:
-        A new PyTree with the same structure as the input PyTrees, but with the function applied to each leaf.
-
-    Example:
-        >>> tree_apply(lambda a, b: a + b + 1, [[[1, 2]]], [[[3, 4]]])
-        [[[5, 7]]]
-    '''
-    leaves, treedefs = zip(*([jax.tree_util.tree_flatten(pytree) for pytree in pytrees]), strict=True)
-    treedef = treedefs[0]
-    results = [func(*args) for args in zip(*leaves, strict=True)]
-    return treedef.unflatten(results)

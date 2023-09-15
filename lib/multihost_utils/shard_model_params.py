@@ -1,7 +1,8 @@
+import jax
+
 from ..llama import Llama, LlamaModel
 from ..llama.attention import Attention
 from ..llama.decoder import Decoder
-from ..tree_utils import tree_apply
 from .shard_array import shard_array
 
 sharding_mp = Llama(
@@ -21,4 +22,4 @@ sharding_mp = Llama(
 )
 
 def shard_model_params(params: Llama) -> Llama:
-    return tree_apply(shard_array, params, sharding_mp)
+    return jax.tree_map(shard_array, params, sharding_mp)

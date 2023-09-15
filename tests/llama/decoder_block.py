@@ -9,7 +9,7 @@ from transformers.models.llama.modeling_llama import LlamaDecoderLayer
 from lib.array_utils import pt2jax
 from lib.llama import model_config_llama1_7B
 from lib.llama.decoder_block import forward_decoder_block
-from lib.param_utils import convert_decoder_block
+from lib.llama_params.convert_params import convert_decoder_block
 from lib.seeding import BEST_INTEGER
 
 batch_size = 2

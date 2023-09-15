@@ -1,25 +1,20 @@
 # JAX Implementation of Llama 2
 
-This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461).
+This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461). The objectives of this project are threefold:
 
-## Related Projects
+1. Implement the Llama 2 model using JAX to enable efficient training and inference on Google Cloud TPU;
+1. Develop a high-quality codebase that serves as an exemplary implementation of the Transformer model using JAX;
+1. Facilitate the identification of common errors and inconsistencies across various transformer models through the implementation of a high-quality codebase, thereby providing valuable insights for the NLP community.
+
+Related projects:
 
 - [hyunwoongko/transformer](https://github.com/hyunwoongko/transformer): PyTorch implementation of the original Transformer
+- [ayaka14732/TrAVis](https://github.com/ayaka14732/TrAVis): An in-browser Transformer attention visualiser that includes a NumPy implementation of BERT
 - [ayaka14732/bart-base-jax](https://github.com/ayaka14732/bart-base-jax): JAX implementation of BART-base
 - [ztjhz/t5-jax](https://github.com/ztjhz/t5-jax): JAX implementation of T5
 - [young-geng/EasyLM](https://github.com/young-geng/EasyLM): LLM framework that includes Flax implementations of LLaMA, GPT-J and RoBERTa
 
-## Acknowledgements
-
 This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https://sites.research.google/trc/about/) (TRC).
-
-## Motivation
-
-The objectives of this project are threefold:
-
-- Implement the Llama 2 model using JAX to enable efficient training and inference on Google Cloud TPU;
-- Develop a high-quality codebase that serves as an exemplary implementation of the Transformer model using JAX;
-- Facilitate the identification of common errors and inconsistencies across various transformer models through the implementation of a high-quality codebase, thereby providing valuable insights for the NLP community.
 
 ## Features
 
@@ -45,7 +40,7 @@ The objectives of this project are threefold:
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
-    - [ ] KV Cache
+    - [ ] KV cache
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [x] Inference
 - [x] Training
@@ -105,9 +100,21 @@ Llama 2:
 
 You can request to access the Llama weights from [the official website](https://ai.meta.com/llama/). After your request is approved, you will automatically get access to the Hugging Face Llama 2 models. You can verify that the models are accessible by trying to access the [Llama 2 7B](https://huggingface.co/meta-llama/Llama-2-7b-hf) version.
 
-### Convert parameters
+### Login into Hugging Face CLI
 
-If you need to convert Llama 2 models, you need to first log in using `huggingface-cli login`.
+If you need to work with Llama 2 models, you need to login into Hugging Face CLI:
+
+```sh
+huggingface-cli login
+```
+
+Alternatively, you can login in non-interactive mode:
+
+```sh
+python -c "from huggingface_hub.hf_api import HfFolder; HfFolder.save_token('<YOUR_HUGGING_FACE_TOKEN>')"
+```
+
+### Convert parameters
 
 ```sh
 python scripts/convert_params_runner.py llama1-7B
@@ -117,7 +124,7 @@ python scripts/convert_params_runner.py llama2-70B
 
 ### Special configuration for TPU Pods
 
-If you are running on TPU pods or other multi-host environments, you need to put the IP address of other machines in `external-ips.txt` (one IP address per line). Besides, you should make sure that one of the hosts can SSH into other hosts.
+If you are running on TPU pods or other multi-host environments, you need to put the IP address of other machines in `~/podips.txt` (one IP address per line). Besides, you should make sure that one of the hosts can SSH into other hosts.
 
 ### Generation
 
@@ -134,6 +141,12 @@ On TPU pods, the command is:
 ## Training
 
 I present a simple example of the training pipeline by fine-tuning the model on the GSM dataset.
+
+### Login into W&B
+
+```sh
+wandb login <YOUR_WANDB_API_KEY>
+```
 
 ### Download GSM dataset
 
@@ -155,17 +168,20 @@ On TPU pods, the command is:
 
 ## Model Configurations
 
-- B: batch_size
-- K/V: d_k/d_v
-- F: d_ff
-- M: d_model
-- R: n_rep_kv
-- H: n_heads_kv
-- L/S/D: seq_len/src_seq_len/dst_seq_len
-- C: vocab_size
-- N: n_layers
+- _B_: batch_size
+- _K_: d_k
+- _V_: d_v
+- _F_: d_ff
+- _M_: d_model
+- _R_: n_rep_kv
+- _H_: n_heads_kv
+- _L_: seq_len
+- _S_: src_seq_len
+- _D_: dst_seq_len
+- _C_: vocab_size
+- _N_: n_layers
 
-| Name | Parameters | _C_ | _N_ | _H_ | _r_ | _M_ | _F_ |
+| Name | Parameters | _C_ | _N_ | _H_ | _R_ | _M_ | _F_ |
 | :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
 | LLaMA 1 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
 | LLaMA 1 13B | | 32000 | 40 | 40 | 1 | 5120 | |
@@ -185,6 +201,8 @@ On TPU pods, the command is:
 ```
 
 ## Model Architecture
+
+<img src="assets/llama.png" width="700px">
 
 ### LLaMA 1 (7B)
 

@@ -7,10 +7,10 @@ def check_params_equal(t1: Any, t2: Any) -> bool:
     '''
     Recursively checks the equality of two objects. 
 
-    If both objects are NumPy arrays, np.array_equal() is used for comparison.
-    If both objects are JAX arrays, jnp.array_equal() is used for comparison.
+    If both objects are NumPy arrays, `np.array_equal()` is used for comparison.
+    If both objects are JAX arrays, `jnp.array_equal()` is used for comparison.
     If both objects are namedtuples, the function is called recursively on each corresponding field.
-    Otherwise, the standard equality operator '==' is used.
+    Otherwise, the standard equality operator `==` is used.
     '''
     if t1.__class__ != t2.__class__:
         return False

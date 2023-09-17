@@ -1,4 +1,4 @@
-# JAX Implementation of Llama 2
+# Llama 2 JAX
 
 This project is the JAX implementation of [Llama 2](https://arxiv.org/abs/1910.13461). The objectives of this project are threefold:
 
@@ -18,10 +18,10 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
 
 ## Features
 
-- [x] Parameter conversion
-    - [x] [Hugging Face to JAX](lib/param_utils/convert_params.py)
-    - [x] [JAX to Hugging Face](lib/param_utils/convert_back_params.py)
-- [x] Model architecture
+- [x] [Parameter conversion](lib/llama_params/)
+    - [x] [Hugging Face to JAX](lib/llama_params/convert_params.py)
+    - [x] [JAX to Hugging Face](lib/llama_params/convert_back_params.py)
+- [x] [Model architecture](lib/llama/)
     - [x] [Dropout](lib/llama/dropout.py)
     - [x] [RMS Norm](lib/llama/rms_norm.py)
     - [x] [Embedding](lib/llama/embedding.py)
@@ -31,26 +31,28 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [x] [Decoder](lib/llama/decoder.py)
     - [x] [Llama Model](lib/llama/llama_model.py)
 - [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
-- [x] Logits processing
+- [x] [Logits processing](lib/logits_processing/)
     - [x] [Bias](lib/logits_processing/bias.py)
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
+    - [ ] KV cache
     - [ ] Beam search
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)
     - [x] [Top-_p_ sampling](lib/generation/top_p.py)
-    - [ ] KV cache
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [x] Inference
 - [x] Training
 - [x] Parallelisation
     - [x] [Model parallelism](lib/multihost_utils/shard_model_params_to_multihost.py)
-- [ ] Documentation (published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/))
+- [ ] Documentation
+
+The documentation of the library of this project is published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/).
 
 ## Environment Setup
 
-This project requires at least Python 3.11, JAX 0.4.14, PyTorch 2.1.0 and Transformers 4.32.0.dev0.
+This project requires at least Python 3.11, JAX 0.4.14, PyTorch 2.1.0, Optax 0.1.8.dev0 and Transformers 4.32.0.dev0.
 
 PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 
@@ -81,6 +83,7 @@ To install PyTorch, you can follow the [official installation guide](https://pyt
 
 ```sh
 pip install git+https://github.com/huggingface/transformers.git
+pip install git+https://github.com/deepmind/optax.git  # https://github.com/google-deepmind/optax/issues/472
 pip install -r requirements.txt
 ```
 
@@ -108,7 +111,7 @@ If you need to work with Llama 2 models, you need to login into Hugging Face CLI
 huggingface-cli login
 ```
 
-Alternatively, you can login in non-interactive mode:
+Alternatively, in case you are not using an interactive shell, you can login in non-interactive mode:
 
 ```sh
 python -c "from huggingface_hub.hf_api import HfFolder; HfFolder.save_token('<YOUR_HUGGING_FACE_TOKEN>')"
@@ -124,7 +127,7 @@ python scripts/convert_params_runner.py llama2-70B
 
 ### Special configuration for TPU Pods
 
-If you are running on TPU pods or other multi-host environments, you need to put the IP address of other machines in `~/podips.txt` (one IP address per line). Besides, you should make sure that one of the hosts can SSH into other hosts.
+If you are running on TPU pods, you need to put the IP address of all other hosts in `~/podips.txt` (one IP address per line). Besides, you should make sure that the local host can SSH into itself and all other hosts listed in the file.
 
 ### Generation
 
@@ -138,11 +141,9 @@ On TPU pods, the command is:
 ./podrun -icw python generate.py
 ```
 
-## Training
-
-I present a simple example of the training pipeline by fine-tuning the model on the GSM dataset.
-
 ### Login into W&B
+
+Before training, you need to login into W&B:
 
 ```sh
 wandb login <YOUR_WANDB_API_KEY>
@@ -150,11 +151,13 @@ wandb login <YOUR_WANDB_API_KEY>
 
 ### Download GSM dataset
 
+I present a simple example of the training pipeline by fine-tuning the model on the GSM dataset.
+
 ```sh
 cd .. && git clone --depth=1 https://github.com/openai/grade-school-math.git
 ```
 
-### Run the training script
+### Training
 
 ```sh
 python train.py
@@ -317,3 +320,4 @@ lm_head: (8192, 32000)
 - In Llama models, each FFN has 3 linear projections, while in BART there are only 2.
 - There is no dropout in the original LLaMA implementation.
 - Llama 2 70B utilises Grouped-Query Attention (GQA).
+- Many people fine-tunes Llama in a 16-bit precision (float16 or bfloat16), but the performance would be impacted and thus comparisons with other models trained in 32-bit precision would be unfair. Another thing that is worth noticing is that the parameters for rotary embedding should be always in 32-bit to avoid collision.

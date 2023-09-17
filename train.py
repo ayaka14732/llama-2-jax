@@ -15,10 +15,10 @@ from typing import Any, Callable
 from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, gsm_collate_fn_train
-from lib.llama import Llama, forward_llama, init_llama, model_config_dummy
+from lib.llama import Llama, forward_llama, init_llama, model_config_llama2_7B
 from lib.loss import cross_entropy_loss
 from lib.multihost_utils import shard_model_params
-from lib.param_utils import save_params
+from lib.param_utils import load_params, save_params
 from lib.proc_init_utils import initialise_tpu
 
 optimize: Callable | None
@@ -26,7 +26,7 @@ optimize: Callable | None
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
     seq, seq_mask, labels, labels_mask = data_batch
-    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_dummy)
+    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 
@@ -42,14 +42,15 @@ def train_step(params: Llama, opt_state: Any, total_loss: Array, data_batch: Tra
 def main() -> None:
     global optimize
 
-    lr = 0.0001
+    lr = 0.00005
     batch_size = 6
     n_accumulation_steps = 8
     max_len = 640
-    n_epochs = 2
+    n_epochs = 7
     seed = 3407
 
     initialise_tpu('v3-32')
+    jax.distributed.initialize()
     is_process_0 = jax.process_index() == 0
     cpu_device = jax.devices('cpu')[0]
 
@@ -65,9 +66,9 @@ def main() -> None:
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
     with jax.default_device(cpu_device):
-        # params = load_params('llama2-7B.pickle')
-        key, subkey = rand.split(key)
-        params = init_llama(key=subkey, model_config=model_config_dummy)
+        params = load_params('llama2-7B.pickle')
+        # key, subkey = rand.split(key)
+        # params = init_llama(key=subkey, model_config=model_config_dummy)
     params = shard_model_params(params)
     if is_process_0:
         print('Successfully loaded and sharded model parameters!')

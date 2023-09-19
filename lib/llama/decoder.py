@@ -15,11 +15,11 @@ def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
         return None, None
     jax.lax.scan(inner, None, params)
 
-def init_decoder(*, key: rand.KeyArray, model_config: ModelConfig) -> Decoder:
+def init_decoder(*, key: Array, model_config: ModelConfig) -> Decoder:
     return stack_leaves([init_decoder_block(key=subkey, model_config=model_config) for subkey in rand.split(key, num=model_config.n_layers)])
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_decoder(params: Decoder, seq: Array, attn_mask: Array, *, key: rand.KeyArray | None, model_config: ModelConfig) -> Array:
+def forward_decoder(params: Decoder, seq: Array, attn_mask: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
     def inner(state, input_):
         key, seq = state
         key, subkey = split_key_nullable(key)

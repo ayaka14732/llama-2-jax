@@ -10,7 +10,7 @@ from ..llama import ModelConfig, Llama, forward_llama_model
 from ._utils import while_loop
 
 class _TopPGenerationState(NamedTuple):
-    key: rand.KeyArray
+    key: Array
     seq: Array
     attn_mask: Array
     last_positions: Array
@@ -37,7 +37,7 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: M
     sorted_probs = nn.softmax(sorted_logits)
     cum_probs = jnp.cumsum(sorted_probs, axis=-1)
     threshold_probs = jnp.maximum(cum_probs[:, 0], top_p)  # guarantee that at least one token will not be masked
-    masked_sorted_logits = jnp.where(cum_probs >= threshold_probs[:, None], jnp.NINF, sorted_logits)
+    masked_sorted_logits = jnp.where(cum_probs >= threshold_probs[:, None], -jnp.inf, sorted_logits)
 
     current_positions = jnp.where(finished, last_positions, last_positions + 1)
 
@@ -53,7 +53,7 @@ def _loop_body_top_p(params: Llama, state: _TopPGenerationState, model_config: M
 
     return _TopPGenerationState(key, seq, attn_mask, current_positions, current_tokens, finished)
 
-def top_p(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig, top_p_config: TopPGenerationConfig) -> Array:
+def top_p(params: Llama, seq: Array, attn_mask: Array, *, key: Array, model_config: ModelConfig, top_p_config: TopPGenerationConfig) -> Array:
     assert 0.0 < top_p_config.top_p < 1.0
 
     last_positions = jnp.argmin(attn_mask, axis=-1) - 1

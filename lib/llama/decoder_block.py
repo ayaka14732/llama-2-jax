@@ -34,7 +34,7 @@ def check_decoder_block(params: DecoderBlock, *, model_config: ModelConfig) -> N
     assert params.up_proj.shape == (model_config.d_model, model_config.d_ff)
     assert params.down_proj.shape == (model_config.d_ff, model_config.d_model)
 
-def init_decoder_block(*, key: rand.KeyArray, model_config: ModelConfig) -> DecoderBlock:
+def init_decoder_block(*, key: Array, model_config: ModelConfig) -> DecoderBlock:
     upper = 1. / math.sqrt(model_config.d_model)
     key0, key1, key2, key3 = rand.split(key, num=4)
     input_norm = init_rms_norm(model_config=model_config)
@@ -46,7 +46,7 @@ def init_decoder_block(*, key: rand.KeyArray, model_config: ModelConfig) -> Deco
     return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: rand.KeyArray | None, model_config: ModelConfig) -> Array:
+def forward_decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
     key0, key1, key2 = split_key_nullable(key, num=3)
 
     seq_ = seq

@@ -32,7 +32,7 @@ def main():
     command = ' '.join(shell_escape(command) for command in args.command)
 
     if args.clean_up:
-        command = f'rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
+        command = f'sudo rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
 
     if args.cwd:
         cwd = os.getcwd()

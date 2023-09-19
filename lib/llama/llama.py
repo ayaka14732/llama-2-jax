@@ -19,7 +19,7 @@ def check_llama(params: Llama, *, model_config: ModelConfig) -> None:
     check_llama_model(params.model, model_config=model_config)
     assert params.lm_head.shape == (model_config.d_model, model_config.vocab_size)
 
-def init_llama(*, key: rand.KeyArray, model_config: ModelConfig) -> Llama:
+def init_llama(*, key: Array, model_config: ModelConfig) -> Llama:
     upper = 1. / math.sqrt(model_config.d_model)
     key0, key1 = rand.split(key)
     model = init_llama_model(key=key0, model_config=model_config)
@@ -27,7 +27,7 @@ def init_llama(*, key: rand.KeyArray, model_config: ModelConfig) -> Llama:
     return Llama(model, lm_head)
 
 @partial(jax.jit, static_argnames=('model_config'))
-def forward_llama(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
+def forward_llama(params: Llama, seq: Array, attn_mask: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
     outputs = forward_llama_model(params.model, seq, attn_mask, key=key, model_config=model_config)
     logits =  outputs @ params.lm_head
     return logits

@@ -28,7 +28,7 @@ def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert params.v_proj.shape == (model_config.d_model, model_config.n_heads_kv, model_config.d_v)
     assert params.out_proj.shape == (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model)
 
-def init_attention(*, key: rand.KeyArray, model_config: ModelConfig) -> Attention:
+def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     upper = 1. / math.sqrt(model_config.d_model)
     key0, key1, key2, key3 = rand.split(key, num=4)
     q_proj = rand.truncated_normal(key0, -upper, upper, (model_config.d_model, model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_k))
@@ -48,9 +48,9 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_ma
 
     qk = op.einsum(q, k, 'batch_size n_rep_kv n_heads_kv src_seq_len d_k, batch_size n_heads_kv dst_seq_len d_k -> batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len')
     qk /= math.sqrt(model_config.d_k)
-    qk = jnp.where(attn_mask, qk, jnp.NINF)
+    qk = jnp.where(attn_mask, qk, -jnp.inf)
     qk = nn.softmax(qk)
-    qk = jnp.where(attn_mask, qk, 0)
+    qk = jnp.where(attn_mask, qk, 0)  # TODO: why this line?
 
     qkv = op.einsum(qk, v, 'batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len, batch_size n_heads_kv dst_seq_len d_v -> batch_size n_rep_kv n_heads_kv src_seq_len d_v')
 

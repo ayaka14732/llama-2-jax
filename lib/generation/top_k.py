@@ -9,7 +9,7 @@ from ..llama import ModelConfig, Llama, forward_llama_model
 from ._utils import while_loop
 
 class _TopKGenerationState(NamedTuple):
-    key: rand.KeyArray
+    key: Array
     seq: Array
     attn_mask: Array
     last_positions: Array
@@ -45,7 +45,7 @@ def _loop_body_top_k(params: Llama, state: _TopKGenerationState, model_config: M
 
     return _TopKGenerationState(key, seq, attn_mask, current_positions, current_tokens, finished)
 
-def top_k(params: Llama, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig, top_k_config: TopKGenerationConfig) -> Array:
+def top_k(params: Llama, seq: Array, attn_mask: Array, *, key: Array, model_config: ModelConfig, top_k_config: TopKGenerationConfig) -> Array:
     assert top_k_config.top_k > 0
 
     last_positions = jnp.argmin(attn_mask, axis=-1) - 1

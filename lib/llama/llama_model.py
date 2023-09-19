@@ -24,7 +24,7 @@ def check_llama_model(params: LlamaModel, *, model_config: ModelConfig) -> None:
     check_decoder(params.decoder, model_config=model_config)
     check_rms_norm(params.norm, model_config=model_config)
 
-def init_llama_model(*, key: rand.KeyArray, model_config: ModelConfig) -> LlamaModel:
+def init_llama_model(*, key: Array, model_config: ModelConfig) -> LlamaModel:
     key0, key1 = rand.split(key)
     embedding = init_embedding(key=key0, model_config=model_config)
     decoder = init_decoder(key=key1, model_config=model_config)
@@ -32,7 +32,7 @@ def init_llama_model(*, key: rand.KeyArray, model_config: ModelConfig) -> LlamaM
     return LlamaModel(embedding, decoder, norm)
 
 @partial(jax.jit, static_argnames=('model_config'))
-def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, key: rand.KeyArray, model_config: ModelConfig) -> Array:
+def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
     assert isinstance(seq, Array)
     assert isinstance(attn_mask, Array)
     assert seq.dtype == jnp.uint16

@@ -12,7 +12,7 @@ def forward_dropout(x: Array, *, key: Array | None, model_config: ModelConfig) -
 
     assert 0. <= model_config.dropout_rate <= 1.
     assert isinstance(x, Array)
-    assert jax.dtypes.issubdtype(key, jax.dtypes.prng_key)
+    assert isinstance(key, Array)
 
     keep_rate = 1. - model_config.dropout_rate
     out = x * rand.bernoulli(key, p=keep_rate, shape=x.shape) / keep_rate

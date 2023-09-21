@@ -16,6 +16,11 @@ A monoid is a semigroup with the added requirement of a neutral element. Therefo
 BEST_INTEGER: Literal[3407] = 3407
 '''The best integer for seeding, as proposed in https://arxiv.org/abs/2109.08203.'''
 
+THE_ANSWER: Literal[42] = 42
+'''
+The answer to the ultimate question of life, the universe, and everything, established in Douglas Adams' book "The Hitchhiker's Guide to the Galaxy".
+'''
+
 BUDDHA: str = r'''
                   _oo0oo_
                  o8888888o

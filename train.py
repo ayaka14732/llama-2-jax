@@ -4,13 +4,15 @@ from jax import Array
 from jax.experimental.multihost_utils import process_allgather
 import jax.numpy as jnp
 import jax.random as rand
-from jax_smi import initialise_tracking
+import jax_smi
 import math
 import optax
+import signal
 import time
 from transformers import LlamaTokenizer
 from tqdm import tqdm
 from typing import Any, Callable
+import wandb
 
 from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
@@ -21,17 +23,47 @@ from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params
 from lib.proc_init_utils import initialise_tpu
 
-optimize: Callable | None
+is_process_0: bool
+params: Llama
+optimize: Callable
+
+def load_params_from_disk(path: str) -> Llama:
+    cpu_device = jax.devices('cpu')[0]
+    with jax.default_device(cpu_device):
+        # params = init_llama(key=rand.PRNGKey(42), model_config=model_config_dummy)
+        params = load_params(path)
+    params = shard_model_params(params)
+    return params
+
+def set_save_params_signal():
+    signal.signal(signal.SIGINT, save_params_signal_handler)
+    signal.signal(signal.SIGTERM, save_params_signal_handler)
+
+def unset_save_params_signal():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
+
+def save_params_to_disk() -> None:
+    unset_save_params_signal()
+    gathered_params = process_allgather(params)
+    if is_process_0:
+        save_params(gathered_params, f'{wandb.run.name}.pickle')  # type: ignore
+    set_save_params_signal()
+
+def save_params_signal_handler(signum, frame):
+    save_params_to_disk()
+    print(f'Signal {signum} received. Params have been saved to disk.')
+    exit(0)
 
 @jax.value_and_grad
-def train_forward(params: Llama, data_batch: TrainData, *, key: rand.KeyArray):
+def train_forward(params: Llama, data_batch: TrainData, *, key: Array):
     seq, seq_mask, labels, labels_mask = data_batch
     logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 
 @jax.jit
-def train_step(params: Llama, opt_state: Any, total_loss: Array, data_batch: TrainData, key: rand.KeyArray) -> tuple[Llama, Any, Array, Array, rand.KeyArray]:
+def train_step(params: Llama, opt_state: Any, total_loss: Array, data_batch: TrainData, key: Array) -> tuple[Llama, Any, Array, Array, Array]:
     key, subkey = rand.split(key)
     loss, grads = train_forward(params, data_batch, key=subkey)
     total_loss += loss
@@ -40,7 +72,7 @@ def train_step(params: Llama, opt_state: Any, total_loss: Array, data_batch: Tra
     return params, opt_state, total_loss, loss, key
 
 def main() -> None:
-    global optimize
+    global is_process_0, params, optimize
 
     lr = 0.00005
     batch_size = 6
@@ -51,13 +83,11 @@ def main() -> None:
 
     initialise_tpu('v3-32')
     jax.distributed.initialize()
+    jax_smi.initialise_tracking()
     is_process_0 = jax.process_index() == 0
-    cpu_device = jax.devices('cpu')[0]
 
     if is_process_0:
-        import wandb
         wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
-        initialise_tracking()
 
     key = rand.PRNGKey(seed)
     tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
@@ -65,13 +95,8 @@ def main() -> None:
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)
     dataloader = LlamaDataLoader(dataset, collate_fn, batch_size, seed)
 
-    with jax.default_device(cpu_device):
-        params = load_params('llama2-7B.pickle')
-        # key, subkey = rand.split(key)
-        # params = init_llama(key=subkey, model_config=model_config_dummy)
-    params = shard_model_params(params)
-    if is_process_0:
-        print('Successfully loaded and sharded model parameters!')
+    params = load_params_from_disk('llama2-7B.pickle')
+    set_save_params_signal()
 
     n_steps = math.ceil(len(dataloader) / n_accumulation_steps)
     schedule = optax.warmup_cosine_decay_schedule(
@@ -109,9 +134,7 @@ def main() -> None:
         if is_process_0:
             wandb.log({'epoch loss': total_loss.item() / (step + 1)})
 
-    gathered_params = process_allgather(params)
-    if is_process_0:
-        save_params(gathered_params, f'{wandb.run.name}.pickle')  # type: ignore
+    save_params_to_disk()
 
 if __name__ == '__main__':
     main()

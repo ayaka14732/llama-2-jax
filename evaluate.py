@@ -21,7 +21,7 @@ def main() -> None:
     if is_process_0:
         jax_smi.initialise_tracking(interval=0.5)
 
-    key = rand.PRNGKey(BEST_INTEGER)
+    key = rand.key(BEST_INTEGER)
     max_len = 640
     batch_size = 2
     seed = HASHED_BUDDHA

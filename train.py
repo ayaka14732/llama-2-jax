@@ -30,7 +30,7 @@ optimize: Callable
 def load_params_from_disk(path: str) -> Llama:
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
-        # params = init_llama(key=rand.PRNGKey(42), model_config=model_config_dummy)
+        # params = init_llama(key=rand.key(42), model_config=model_config_dummy)
         params = load_params(path)
     params = shard_model_params(params)
     return params
@@ -52,8 +52,8 @@ def save_params_to_disk() -> None:
 
 def save_params_signal_handler(signum, frame):
     save_params_to_disk()
-    print(f'Signal {signum} received. Params have been saved to disk.')
-    exit(0)
+    print(f'Signal {signum} received. Model params have been successfully saved to disk.')
+    exit(-1)
 
 @jax.value_and_grad
 def train_forward(params: Llama, data_batch: TrainData, *, key: Array):
@@ -89,7 +89,7 @@ def main() -> None:
     if is_process_0:
         wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
 
-    key = rand.PRNGKey(seed)
+    key = rand.key(seed)
     tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)

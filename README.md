@@ -172,35 +172,30 @@ On TPU pods, the command is:
 ## Model Configurations
 
 - _B_: batch_size
-- _K_: d_k
-- _V_: d_v
-- _F_: d_ff
-- _M_: d_model
-- _R_: n_rep_kv
-- _H_: n_heads_kv
 - _L_: seq_len
 - _S_: src_seq_len
 - _D_: dst_seq_len
 - _C_: vocab_size
 - _N_: n_layers
+- _K_: d_k
+- _V_: d_v
+- _H_: n_heads_kv
+- _R_: n_rep_kv
+- _M_: d_model
+- _F_: d_ff
 
-| Name | Parameters | _C_ | _N_ | _H_ | _R_ | _M_ | _F_ |
-| :-: | :-: | :-: | :-: | :-: | :-: | :-: | :-: |
-| LLaMA 1 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
-| LLaMA 1 13B | | 32000 | 40 | 40 | 1 | 5120 | |
-| LLaMA 1 33B | | 32000 | 60 | 52 | 1 | 6656 | |
-| LLaMA 1 65B | | 32000 | 80 | 64 | 1 | 8192 | |
-| Llama 2 7B | 6738415616 | 32000 | 32 | 32 | 1 | 4096 | 11008 |
-| Llama 2 13B | | 32000 | | | | | |
-| Llama 2 70B | | 32000 | 80 | 8 | 8 | 8192 | 28672 |
+| Name | Parameters | _C_ | _N_ | _K_/_V_ | _H_ | _R_ | _M_ | _F_ |
+| -: | -: | -: | -: | -: | -: | -: | -: | -: |
+| LLaMA 1 7B | 6738415616 | 32000 | 32 | 128 | 32 | 1 | 4096 | 11008 |
+| Llama 2 7B | 6738415616 | 32000 | 32 | 128 | 32 | 1 | 4096 | 11008 |
+| LLaMA 1 13B |  | 32000 | 40 |  | 40 | 1 | 5120 |  |
+| Llama 2 13B | 13015864320 | 32000 | 40 | 128 | 40 | 1 | 5120 | 13824 |
+| LLaMA 1 33B |  | 32000 | 60 |  | 52 | 1 | 6656 |  |
+| LLaMA 1 65B |  | 32000 | 80 |  | 64 | 1 | 8192 |  |
+| Llama 2 70B | 68976648192 | 32000 | 80 | 128 | 8 | 8 | 8192 | 28672 |
 
 ```
-  n_parameters
-= 2 * vocab_size * d_model
-+ (2 * n_layers + 1) * d_model
-+ 2 * n_layers * d_model * n_rep_kv * n_heads_kv * d_k
-+ 2 * n_layers * d_model * n_heads_kv * d_k
-+ 3 * n_layers * d_model * d_ff
+n_params = 2CM + (2N + 1)M + 2NMRHK + 2NMHK + 3NMF
 ```
 
 ## Model Architecture

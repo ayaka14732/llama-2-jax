@@ -5,8 +5,8 @@ import jax.random as rand
 import math
 from typing import Any, NamedTuple
 
-from .attention import KVCache
 from .ModelConfig import ModelConfig
+from .attention import KVCache
 from .llama_model import LlamaModel, check_llama_model, forward_llama_model, init_llama_model
 
 class Llama(NamedTuple):

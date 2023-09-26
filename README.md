@@ -36,7 +36,7 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
-    - [ ] KV cache
+    - [x] KV cache
     - [ ] Beam search
     - [ ] Beam sampling
     - [x] [Top-_k_ sampling](lib/generation/top_k.py)

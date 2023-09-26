@@ -17,6 +17,16 @@ class Attention(NamedTuple):
     v_proj: Any  # Array
     out_proj: Any  # Array
 
+class KVCache(NamedTuple):
+    k_cache: Any  # Array
+    v_cache: Any  # Array
+
+def init_kv_cache(batch_size: int, dst_len: int, *, model_config: ModelConfig) -> tuple[Array, KVCache]:
+    cache_position = jnp.array(0, dtype=jnp.uint16)
+    k_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_k))
+    v_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_v))
+    return cache_position, KVCache(k_cache, v_cache)
+
 def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert isinstance(params.q_proj, Array)
     assert isinstance(params.k_proj, Array)
@@ -38,21 +48,30 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:
-    q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_rep_kv n_heads_kv d_k -> batch_size n_rep_kv n_heads_kv src_seq_len d_k')
-    k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_k -> batch_size n_heads_kv dst_seq_len d_k')
-    v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_v -> batch_size n_heads_kv dst_seq_len d_v')
+def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+    q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
+    k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
+    v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')
+
+    if kv_cache is not None:
+        assert q.shape[3] == 1
+        assert k.shape[2] == 1
+        assert v.shape[2] == 1
+        k_cache, v_cache = kv_cache
+        k = k_cache.at[:, :, cache_position].set(k.squeeze(2))
+        v = v_cache.at[:, :, cache_position].set(v.squeeze(2))
+        kv_cache = KVCache(k, v)
 
     q = forward_rotary_embedding(q)
     k = forward_rotary_embedding(k)
 
-    qk = op.einsum(q, k, 'batch_size n_rep_kv n_heads_kv src_seq_len d_k, batch_size n_heads_kv dst_seq_len d_k -> batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len')
+    qk = op.einsum(q, k, 'B R H S K, B H D K -> B R H S D')
     qk /= math.sqrt(model_config.d_k)
     qk = jnp.where(attn_mask, qk, -jnp.inf)
     qk = nn.softmax(qk)
     qk = jnp.where(attn_mask, qk, 0)  # TODO: why this line?
 
-    qkv = op.einsum(qk, v, 'batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len, batch_size n_heads_kv dst_seq_len d_v -> batch_size n_rep_kv n_heads_kv src_seq_len d_v')
+    qkv = op.einsum(qk, v, 'B R H S D, B H D V -> B R H S V')
 
-    out = op.einsum(qkv, params.out_proj, 'batch_size n_rep_kv n_heads_kv src_seq_len d_v, n_rep_kv n_heads_kv d_v d_model -> batch_size src_seq_len d_model')
-    return out
+    out = op.einsum(qkv, params.out_proj, 'B R H S V, R H V M -> B S M')
+    return out, kv_cache

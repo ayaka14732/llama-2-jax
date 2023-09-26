@@ -43,7 +43,7 @@ mask_pt = torch.where(mask_pt, 0, -10000.)
 
 y_pt = attention_pt(hidden_states=seq_pt, attention_mask=mask_pt)[0]
 y_jax = pt2jax(y_pt)
-y_hat_jax = forward_attention(params_jax, seq_jax, seq_jax, mask_jax, model_config=config_jax)
+y_hat_jax, _ = forward_attention(params_jax, seq_jax, seq_jax, mask_jax, model_config=config_jax)
 
 y_jax = jnp.where(mask_jax_1d[..., None], y_jax, 0.)
 y_hat_jax = jnp.where(mask_jax_1d[..., None], y_hat_jax, 0.)

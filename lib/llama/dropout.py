@@ -6,7 +6,7 @@ import jax.random as rand
 from .ModelConfig import ModelConfig
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_dropout(x: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
+def forward_dropout(x: Array, *, key: Array | None=None, model_config: ModelConfig) -> Array:
     if key is None or model_config.dropout_rate is None:  # should disable dropout
         return x
 

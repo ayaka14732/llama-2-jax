@@ -8,7 +8,6 @@ optax
 # utilities
 fire
 mypy
-fabric
 wandb
 matplotlib
 tqdm

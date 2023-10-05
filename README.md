@@ -52,7 +52,7 @@ The documentation of the library of this project is published on [GitHub Pages](
 
 ## Environment Setup
 
-This project requires at least Python 3.11, JAX 0.4.16, PyTorch 2.1.0, Optax 0.1.8.dev0 and Transformers 4.32.0.dev0.
+This project requires at least Python 3.11, JAX 0.4.17, PyTorch 2.1.0, Optax 0.1.8.dev0 and Transformers 4.32.0.dev0.
 
 PyTorch and Transformers are needed for testing purposes. Additionally, the data loader depends on PyTorch `DataLoader`, while the profiling functionality requires TensorFlow.
 
@@ -69,6 +69,10 @@ pip install -U pip
 pip install -U wheel
 ```
 
+### Special configuration for TPU Pods
+
+If you are running on TPU pods, you need to put the IP address of all other hosts in `~/podips.txt` (one IP address per line). Besides, you should make sure that the local host can SSH into itself and all other hosts listed in the file.
+
 ### Install the proper version of JAX
 
 You need to follow the installation instructions on JAX's [official GitHub page](https://github.com/google/jax#installation).
@@ -79,12 +83,32 @@ Typically, you only need to install the CPU version of PyTorch since we perform 
 
 To install PyTorch, you can follow the [official installation guide](https://pytorch.org/get-started/locally/).
 
+On TPU VMs, this is usually:
+
+```sh
+pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
+```
+
+On TPU Pods:
+
+```sh
+./podrun -i -- ~/venv/bin/pip install --pre torch --index-url https://download.pytorch.org/whl/nightly/cpu
+```
+
 ### Install other dependencies
 
 ```sh
 pip install git+https://github.com/huggingface/transformers.git
 pip install git+https://github.com/deepmind/optax.git  # https://github.com/google-deepmind/optax/issues/472
 pip install -r requirements.txt
+```
+
+On TPU Pods:
+
+```sh
+./podrun -i -- ~/venv/bin/pip install git+https://github.com/huggingface/transformers.git
+./podrun -i -- ~/venv/bin/pip install git+https://github.com/deepmind/optax.git
+./podrun -iw -- ~/venv/bin/pip install -r requirements.txt
 ```
 
 ### Download LLaMA weights
@@ -117,6 +141,12 @@ Alternatively, in case you are not using an interactive shell, you can login in 
 python -c "from huggingface_hub.hf_api import HfFolder; HfFolder.save_token('<YOUR_HUGGING_FACE_TOKEN>')"
 ```
 
+On TPU Pods:
+
+```sh
+./podrun -i -- ~/venv/bin/python -c "from huggingface_hub.hf_api import HfFolder; HfFolder.save_token('<YOUR_HUGGING_FACE_TOKEN>')"
+```
+
 ### Convert parameters
 
 ```sh
@@ -124,10 +154,6 @@ python scripts/convert_params_runner.py llama1-7B
 python scripts/convert_params_runner.py llama2-7B
 python scripts/convert_params_runner.py llama2-70B
 ```
-
-### Special configuration for TPU Pods
-
-If you are running on TPU pods, you need to put the IP address of all other hosts in `~/podips.txt` (one IP address per line). Besides, you should make sure that the local host can SSH into itself and all other hosts listed in the file.
 
 ### Generation
 

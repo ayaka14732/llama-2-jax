@@ -49,17 +49,16 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
 
 @partial(jax.jit, static_argnames=('model_config',))
 def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+    dst_len = dst_seq.shape[1]
+
     q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
     k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
     v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')
 
-    if kv_cache is not None:
-        assert q.shape[3] == 1
-        assert k.shape[2] == 1
-        assert v.shape[2] == 1
+    if cache_position is not None and kv_cache is not None:
         k_cache, v_cache = kv_cache
-        k = k_cache.at[:, :, cache_position].set(k.squeeze(2))
-        v = v_cache.at[:, :, cache_position].set(v.squeeze(2))
+        k = k_cache.at[:, :, cache_position:cache_position+dst_len].set(k)
+        v = v_cache.at[:, :, cache_position:cache_position+dst_len].set(v)
         kv_cache = KVCache(k, v)
 
     q = forward_rotary_embedding(q)

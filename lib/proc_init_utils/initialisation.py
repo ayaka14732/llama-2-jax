@@ -14,7 +14,6 @@ def _post_init_general() -> None:
     # post-init flags
     import jax
     jax.config.update('jax_enable_custom_prng', True)
-    jax.config.update('jax_default_prng_impl', 'rbg')
     jax.config.update('jax_default_matmul_precision', jax.lax.Precision.HIGHEST)
     jax.config.update('jax_spmd_mode', 'allow_all')
 

@@ -57,8 +57,9 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask
 
     if cache_position is not None and kv_cache is not None:
         k_cache, v_cache = kv_cache
-        k = k_cache.at[:, :, cache_position:cache_position+dst_len].set(k)
-        v = v_cache.at[:, :, cache_position:cache_position+dst_len].set(v)
+        start_indices = jnp.array([0, 0, cache_position, 0], dtype=jnp.uint16)
+        k = jax.lax.dynamic_update_slice(k_cache, k, start_indices=start_indices)
+        v = jax.lax.dynamic_update_slice(v_cache, v, start_indices=start_indices)
         kv_cache = KVCache(k, v)
 
     q = forward_rotary_embedding(q)

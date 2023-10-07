@@ -42,8 +42,6 @@ def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, cac
     assert model_config.d_k % 2 == 0
     assert key is None or model_config.dropout_rate is not None
 
-    attn_mask = jnp.tril(jnp.einsum('bi,bj->bij', attn_mask, attn_mask))[:, None, None]
-
     seq = forward_embedding(params.embedding, seq)
     seq, kv_cache = forward_decoder(params.decoder, seq, attn_mask, cache_position=cache_position, kv_cache=kv_cache, key=key, model_config=model_config)
     seq = forward_rms_norm(params.norm, seq, model_config=model_config)

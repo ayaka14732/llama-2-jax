@@ -48,7 +48,7 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     dst_len = dst_seq.shape[1]
 
     q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
@@ -66,9 +66,9 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_ma
 
     qk = op.einsum(q, k, 'B R H S K, B H D K -> B R H S D')
     qk /= math.sqrt(model_config.d_k)
-    qk = jnp.where(attn_mask, qk, -jnp.inf)
+    qk = jnp.where(qk_mask, qk, -jnp.inf)
     qk = nn.softmax(qk)
-    qk = jnp.where(attn_mask, qk, 0)  # TODO: why this line?
+    qk = jnp.where(qk_mask, qk, 0)  # TODO: why this line?
 
     qkv = op.einsum(qk, v, 'B R H S D, B H D V -> B R H S V')
 

@@ -45,7 +45,9 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
 - [x] Inference
 - [x] Training
 - [x] Parallelisation
+    - [ ] Data parallelism
     - [x] [Model parallelism](lib/multihost_utils/shard_model_params_to_multihost.py)
+    - [ ] Other parallelisation schemes
 - [ ] Documentation
 
 The documentation of the library of this project is published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/).

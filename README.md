@@ -42,7 +42,7 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
     - [x] [KV cache](lib/llama/kv_cache.py)
-    - [ ] Left padding
+    - [x] Left padding
     - [ ] Beam search
     - [ ] Beam sampling
     - [ ] Top-_k_ sampling
@@ -341,5 +341,6 @@ lm_head: (8192, 32000)
 - There is no bias in the _Q_, _K_, _V_ matrices and the linear projections in the FFNs, which is the same as the original transformer, but different from BERT and BART.
 - In Llama models, each FFN has 3 linear projections, while in BART there are only 2.
 - There is no dropout in the original LLaMA implementation.
+- No left padding in the original implementation, see [huggingface/transformers#26072](https://github.com/huggingface/transformers/issues/26072).
 - Llama 2 70B utilises Grouped-Query Attention (GQA).
 - Many people fine-tunes Llama in a 16-bit precision (float16 or bfloat16), but the performance would be impacted and thus comparisons with other models trained in 32-bit precision would be unfair. Another thing that is worth noticing is that the parameters for rotary embedding should be always in 32-bit to avoid collision.

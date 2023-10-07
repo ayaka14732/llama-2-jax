@@ -7,11 +7,11 @@ import jax.numpy as jnp
 # and https://github.com/huggingface/transformers/blob/main/src/transformers/models/llama/modeling_llama.py#L92
 def _make_weights(seq_len: int, d_k: int) -> tuple[Array, Array]:
     inv_freq = 1. / (10000 ** (jnp.arange(0, d_k, 2) / d_k))
-    sinusoid_inp = op.einsum(jnp.arange(seq_len), inv_freq, 'seq_len, j -> seq_len j')
+    sinusoid_inp = op.einsum(jnp.arange(seq_len), inv_freq, 'L, j -> L j')
     sin_val = jnp.sin(sinusoid_inp)
     cos_val = jnp.cos(sinusoid_inp)
-    sin_val = op.repeat(sin_val, 'seq_len d_k -> seq_len (i d_k)', i=2)
-    cos_val = op.repeat(cos_val, 'seq_len d_k -> seq_len (i d_k)', i=2)
+    sin_val = op.repeat(sin_val, 'L K -> L (i K)', i=2)
+    cos_val = op.repeat(cos_val, 'L K -> L (i K)', i=2)
     return sin_val, cos_val
 
 def _rotate_half(x: Array) -> Array:
@@ -30,6 +30,6 @@ def forward_rotary_embedding(m: Array) -> Array:
         assert cos_val.dtype == jnp.float32
 
     n = _rotate_half(m)
-    a = op.einsum(m, cos_val, '... seq_len d_k, seq_len d_k -> ... seq_len d_k').astype(m.dtype)
-    b = op.einsum(n, sin_val, '... seq_len d_k, seq_len d_k -> ... seq_len d_k').astype(m.dtype)
+    a = op.einsum(m, cos_val, '... L K, L K -> ... L K').astype(m.dtype)
+    b = op.einsum(n, sin_val, '... L K, L K -> ... L K').astype(m.dtype)
     return a + b

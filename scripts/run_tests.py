@@ -1,9 +1,9 @@
-import os
 from glob import iglob
 import subprocess
+import sys
 
 def run_test(test_file: str) -> int:
-    python_interpreter = os.path.join('venv', 'bin', 'python')
+    python_interpreter = sys.executable
     result = subprocess.run([python_interpreter, test_file])
     return result.returncode
 

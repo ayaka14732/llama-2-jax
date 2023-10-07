@@ -1,14 +1,16 @@
-import einops as op
 from functools import partial
+import math
+from typing import Any, NamedTuple
+
+import einops as op
 import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
 import jax.random as rand
-import math
-from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
+from .kv_cache import KVCache
 from .rotary_embedding import forward_rotary_embedding
 
 class Attention(NamedTuple):
@@ -38,21 +40,28 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, attn_mask: Array, *, model_config: ModelConfig) -> Array:
-    q = op.einsum(src_seq, params.q_proj, 'batch_size src_seq_len d_model, d_model n_rep_kv n_heads_kv d_k -> batch_size n_rep_kv n_heads_kv src_seq_len d_k')
-    k = op.einsum(dst_seq, params.k_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_k -> batch_size n_heads_kv dst_seq_len d_k')
-    v = op.einsum(dst_seq, params.v_proj, 'batch_size dst_seq_len d_model, d_model n_heads_kv d_v -> batch_size n_heads_kv dst_seq_len d_v')
+def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+    q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
+    k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
+    v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')
+
+    if cache_position is not None and kv_cache is not None:
+        k_cache, v_cache = kv_cache
+        start_indices = jnp.array([0, 0, cache_position, 0], dtype=jnp.uint16)
+        k = jax.lax.dynamic_update_slice(k_cache, k, start_indices=start_indices)
+        v = jax.lax.dynamic_update_slice(v_cache, v, start_indices=start_indices)
+        kv_cache = KVCache(k, v)
 
     q = forward_rotary_embedding(q)
     k = forward_rotary_embedding(k)
 
-    qk = op.einsum(q, k, 'batch_size n_rep_kv n_heads_kv src_seq_len d_k, batch_size n_heads_kv dst_seq_len d_k -> batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len')
+    qk = op.einsum(q, k, 'B R H S K, B H D K -> B R H S D')
     qk /= math.sqrt(model_config.d_k)
-    qk = jnp.where(attn_mask, qk, -jnp.inf)
+    qk = jnp.where(qk_mask, qk, -jnp.inf)
     qk = nn.softmax(qk)
-    qk = jnp.where(attn_mask, qk, 0)  # TODO: why this line?
+    qk = jnp.where(qk_mask, qk, 0)  # TODO: why this line?
 
-    qkv = op.einsum(qk, v, 'batch_size n_rep_kv n_heads_kv src_seq_len dst_seq_len, batch_size n_heads_kv dst_seq_len d_v -> batch_size n_rep_kv n_heads_kv src_seq_len d_v')
+    qkv = op.einsum(qk, v, 'B R H S D, B H D V -> B R H S V')
 
-    out = op.einsum(qkv, params.out_proj, 'batch_size n_rep_kv n_heads_kv src_seq_len d_v, n_rep_kv n_heads_kv d_v d_model -> batch_size src_seq_len d_model')
-    return out
+    out = op.einsum(qkv, params.out_proj, 'B R H S V, R H V M -> B S M')
+    return out, kv_cache

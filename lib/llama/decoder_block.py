@@ -1,14 +1,16 @@
 from functools import partial
-import jax
-from jax import Array
-import jax.random as rand
 import math
 from typing import Any, NamedTuple
 
+import jax
+from jax import Array
+import jax.random as rand
+
 from ..rand_utils import split_key_nullable
-from .attention import Attention, check_attention, forward_attention, init_attention
 from .ModelConfig import ModelConfig
+from .attention import Attention, check_attention, forward_attention, init_attention
 from .dropout import forward_dropout
+from .kv_cache import KVCache
 from .rms_norm import check_rms_norm, forward_rms_norm, init_rms_norm
 
 class DecoderBlock(NamedTuple):
@@ -46,12 +48,12 @@ def init_decoder_block(*, key: Array, model_config: ModelConfig) -> DecoderBlock
     return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *, key: Array | None, model_config: ModelConfig) -> Array:
+def forward_decoder_block(params: DecoderBlock, seq: Array, qk_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     key0, key1, key2 = split_key_nullable(key, num=3)
 
     seq_ = seq
     seq = forward_rms_norm(params.input_norm, seq, model_config=model_config)
-    seq = forward_attention(params.attention, seq, seq, attn_mask, model_config=model_config)
+    seq, kv_cache = forward_attention(params.attention, seq, seq, qk_mask, cache_position=cache_position, kv_cache=kv_cache, model_config=model_config)
     seq = forward_dropout(seq, key=key0, model_config=model_config)
     seq += seq_
 
@@ -63,4 +65,4 @@ def forward_decoder_block(params: DecoderBlock, seq: Array, attn_mask: Array, *,
     seq = forward_dropout(seq, key=key2, model_config=model_config)
     seq += seq_
 
-    return seq
+    return seq, kv_cache

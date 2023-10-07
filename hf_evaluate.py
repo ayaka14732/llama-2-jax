@@ -2,13 +2,14 @@ from lib.proc_init_utils import initialise_gpu; initialise_gpu(cuda_visible_devi
 
 from functools import partial
 from itertools import chain, repeat
+import json
+from typing import NamedTuple
+
 import jax
 import jax.numpy as jnp
-import json
 import torch
 from tqdm import tqdm
 from transformers import LlamaConfig, LlamaTokenizer
-from typing import NamedTuple
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset

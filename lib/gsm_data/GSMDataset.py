@@ -1,7 +1,8 @@
 import json
 import os
-from torch.utils.data import Dataset
 from typing import Literal, Union
+
+from torch.utils.data import Dataset
 
 def load_data(*, split=Union[Literal['train'], Literal['test']]):
     path = os.path.join(f'../grade-school-math/grade_school_math/data/{split}.jsonl')

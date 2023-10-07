@@ -1,5 +1,6 @@
-from jax import Array
 from typing import NamedTuple
+
+from jax import Array
 
 class TrainData(NamedTuple):
     seq: Array

@@ -1,7 +1,8 @@
+from typing import Any
+
 from jax import Array
 import jax.numpy as jnp
 import numpy as np
-from typing import Any
 
 def check_params_equal(t1: Any, t2: Any) -> bool:
     '''

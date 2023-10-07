@@ -1,6 +1,7 @@
+import math
+
 from jax import Array
 import jax.random as rand
-import math
 
 from .ModelConfig import ModelConfig
 

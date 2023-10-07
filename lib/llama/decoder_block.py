@@ -1,9 +1,10 @@
 from functools import partial
+import math
+from typing import Any, NamedTuple
+
 import jax
 from jax import Array
 import jax.random as rand
-import math
-from typing import Any, NamedTuple
 
 from ..rand_utils import split_key_nullable
 from .ModelConfig import ModelConfig

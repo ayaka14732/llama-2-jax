@@ -1,5 +1,6 @@
-import jax.numpy as jnp
 from typing import Any, NamedTuple
+
+import jax.numpy as jnp
 
 from .ModelConfig import ModelConfig
 

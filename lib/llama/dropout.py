@@ -1,4 +1,5 @@
 from functools import partial
+
 import jax
 from jax import Array
 import jax.random as rand

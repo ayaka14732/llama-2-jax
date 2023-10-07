@@ -1,12 +1,13 @@
-import einops as op
 from functools import partial
+import math
+from typing import Any, NamedTuple
+
+import einops as op
 import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
 import jax.random as rand
-import math
-from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
 from .kv_cache import KVCache

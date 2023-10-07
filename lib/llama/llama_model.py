@@ -1,9 +1,10 @@
 from functools import partial
+from typing import Any, NamedTuple
+
 import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
-from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
 from .decoder import Decoder, check_decoder, forward_decoder, init_decoder

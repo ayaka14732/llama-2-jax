@@ -1,9 +1,10 @@
 from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 from lib.proc_init_utils import initialise_cpu; initialise_cpu()
 
+from typing import NamedTuple
+
 from jax import Array
 import numpy as np
-from typing import NamedTuple
 
 from lib.array_utils import np2jax
 from lib.param_utils import check_params_equal, load_params_bytes, save_params_bytes

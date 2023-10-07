@@ -1,8 +1,9 @@
+from types import EllipsisType
+
 import jax
 from jax import Array
 from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
 import numpy as np
-from types import EllipsisType
 
 def shard_array(arr: Array, axis: int | EllipsisType) -> Array:
     shape = arr.shape

@@ -4,11 +4,11 @@ import torch.nn as tnn
 from transformers import LlamaForCausalLM, LlamaModel as LlamaModelPt
 from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecoderLayer
 
-from lib.array_utils import pt2jax
-from lib.llama import Llama, LlamaModel, ModelConfig
-from lib.llama.attention import Attention
-from lib.llama.decoder_block import DecoderBlock
-from lib.tree_utils import stack_leaves
+from ..array_utils import pt2jax
+from ..llama import Llama, LlamaModel, ModelConfig
+from ..llama.attention import Attention
+from ..llama.decoder_block import DecoderBlock
+from ..tree_utils import stack_leaves
 
 def convert_proj(x: tnn.Linear) -> Array:
     return pt2jax(x.weight.T)

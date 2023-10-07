@@ -21,11 +21,10 @@ class KVCache(NamedTuple):
     k_cache: Any  # Array
     v_cache: Any  # Array
 
-def init_kv_cache(batch_size: int, dst_len: int, *, model_config: ModelConfig) -> tuple[Array, KVCache]:
-    cache_position = jnp.array(0, dtype=jnp.uint16)
+def init_kv_cache(batch_size: int, dst_len: int, *, model_config: ModelConfig) -> KVCache:
     k_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_k))
     v_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_v))
-    return cache_position, KVCache(k_cache, v_cache)
+    return KVCache(k_cache, v_cache)
 
 def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert isinstance(params.q_proj, Array)
@@ -49,8 +48,6 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
 
 @partial(jax.jit, static_argnames=('model_config',))
 def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
-    dst_len = dst_seq.shape[1]
-
     q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
     k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
     v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')

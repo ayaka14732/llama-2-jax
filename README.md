@@ -21,6 +21,7 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
 - [x] [Parameter conversion](lib/llama_params/)
     - [x] [Hugging Face to JAX](lib/llama_params/convert_params.py)
     - [x] [JAX to Hugging Face](lib/llama_params/convert_back_params.py)
+- [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
 - [x] [Model architecture](lib/llama/)
     - [x] [Dropout](lib/llama/dropout.py)
     - [x] [RMS Norm](lib/llama/rms_norm.py)
@@ -30,7 +31,12 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [x] [Decoder block](lib/llama/decoder_block.py)
     - [x] [Decoder](lib/llama/decoder.py)
     - [x] [Llama Model](lib/llama/llama_model.py)
+    - [x] [Llama](lib/llama/llama.py)
 - [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
+- [x] Training
+    - [ ] Data parallelism
+    - [x] [Model parallelism](lib/multihost_utils/shard_model_params.py)
+    - [ ] Other parallelisation schemes
 - [x] [Logits processing](lib/logits_processing/)
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
@@ -41,13 +47,7 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [ ] Beam sampling
     - [ ] Top-_k_ sampling
     - [ ] Top-_p_ sampling
-- [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
-- [x] Training
-- [x] Parallelisation
-    - [ ] Data parallelism
-    - [x] [Model parallelism](lib/multihost_utils/shard_model_params_to_multihost.py)
-    - [ ] Other parallelisation schemes
-- [ ] Documentation
+- [ ] [Documentation](.github/workflows/publish.yml)
 
 The documentation of the library of this project is published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/).
 

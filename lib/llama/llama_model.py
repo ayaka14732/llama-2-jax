@@ -6,9 +6,9 @@ import jax.random as rand
 from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
-from .attention import KVCache
 from .decoder import Decoder, check_decoder, forward_decoder, init_decoder
 from .embedding import check_embedding, forward_embedding, init_embedding
+from .kv_cache import KVCache
 from .rms_norm import check_rms_norm, forward_rms_norm, init_rms_norm
 
 class LlamaModel(NamedTuple):

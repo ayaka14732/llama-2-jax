@@ -9,6 +9,7 @@ import math
 from typing import Any, NamedTuple
 
 from .ModelConfig import ModelConfig
+from .kv_cache import KVCache
 from .rotary_embedding import forward_rotary_embedding
 
 class Attention(NamedTuple):
@@ -16,15 +17,6 @@ class Attention(NamedTuple):
     k_proj: Any  # Array
     v_proj: Any  # Array
     out_proj: Any  # Array
-
-class KVCache(NamedTuple):
-    k_cache: Any  # Array
-    v_cache: Any  # Array
-
-def init_kv_cache(batch_size: int, dst_len: int, *, model_config: ModelConfig) -> KVCache:
-    k_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_k))
-    v_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_v))
-    return KVCache(k_cache, v_cache)
 
 def check_attention(params: Attention, *, model_config: ModelConfig) -> None:
     assert isinstance(params.q_proj, Array)

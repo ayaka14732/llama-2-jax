@@ -7,8 +7,9 @@ from typing import Any, NamedTuple
 
 from ..rand_utils import split_key_nullable
 from .ModelConfig import ModelConfig
-from .attention import Attention, KVCache, check_attention, forward_attention, init_attention
+from .attention import Attention, check_attention, forward_attention, init_attention
 from .dropout import forward_dropout
+from .kv_cache import KVCache
 from .rms_norm import check_rms_norm, forward_rms_norm, init_rms_norm
 
 class DecoderBlock(NamedTuple):

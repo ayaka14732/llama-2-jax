@@ -7,8 +7,8 @@ import jax.random as rand
 from ..rand_utils import split_key_nullable
 from ..tree_utils import stack_leaves
 from .ModelConfig import ModelConfig
-from .attention import KVCache
 from .decoder_block import DecoderBlock, DecoderBlock as Decoder, check_decoder_block, forward_decoder_block, init_decoder_block
+from .kv_cache import KVCache
 
 def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
     def inner(state, input_):

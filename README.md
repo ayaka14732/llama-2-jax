@@ -32,17 +32,16 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [x] [Llama Model](lib/llama/llama_model.py)
 - [x] [Cross entropy loss](lib/loss/cross_entropy_loss.py)
 - [x] [Logits processing](lib/logits_processing/)
-    - [x] [Bias](lib/logits_processing/bias.py)
     - [x] [Penalize presence](lib/logits_processing/penalize_presence.py)
     - [x] [Penalize frequency](lib/logits_processing/penalize_frequency.py)
 - [ ] Generation
-    - [x] KV cache
+    - [x] [KV cache](lib/llama/kv_cache.py)
+    - [ ] Left padding
     - [ ] Beam search
     - [ ] Beam sampling
-    - [x] [Top-_k_ sampling](lib/generation/top_k.py)
-    - [x] [Top-_p_ sampling](lib/generation/top_p.py)
+    - [ ] Top-_k_ sampling
+    - [ ] Top-_p_ sampling
 - [x] [Data loading](lib/dataloader/LlamaDataLoader.py)
-- [x] Inference
 - [x] Training
 - [x] Parallelisation
     - [ ] Data parallelism

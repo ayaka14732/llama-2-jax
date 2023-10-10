@@ -11,7 +11,9 @@ from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
 from lib.seeding import HASHED_BUDDHA
 
-max_len = 256
+from lib.llama.rotary_embedding import init_rotary_values
+
+max_len = 32
 top_k = 1
 
 def load_params_from_disk():
@@ -33,35 +35,44 @@ params = load_params_from_disk()
 
 key = rand.key(HASHED_BUDDHA, impl='rbg')
 
-tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
-sentences = ['Four score and seven years ago our fathers brought forth']  # multiple sentences are currently not supported
+tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf', padding_side='left')
+sentences = [
+    'Four score and seven years ago our fathers brought forth',
+    'I go to school by',
+]
 
 batch_size = len(sentences)
 
 tokenizer.pad_token = tokenizer.eos_token
-inputs = tokenizer(sentences, padding='max_length', max_length=max_len, return_tensors='jax')
+inputs = tokenizer(sentences, padding='max_length', truncation=True, max_length=max_len, return_tensors='jax')
 seq = inputs.input_ids.astype(jnp.uint16)
 attn_mask = inputs.attention_mask.astype(jnp.bool_)
-
-kv_cache = init_kv_cache(batch_size, max_len, model_config=model_config_llama2_7B)
-cache_position = jnp.array(0, dtype=jnp.uint16)
-kv_cache = jax.tree_map(lambda x: x.astype(jnp.bfloat16), kv_cache)
+assert not attn_mask.all(axis=-1).any()  # every sample has room to generate
 
 # initial forward
-outputs, kv_cache = forward_llama_model(params.model, seq, attn_mask, cache_position=cache_position, kv_cache=kv_cache, key=None, model_config=model_config_llama2_7B)
-cache_position = attn_mask.argmin().astype(jnp.uint16)
-logits = outputs[:, cache_position - 1] @ params.lm_head
+initial_seq_len = seq.shape[1]
+leftpad_len = (~attn_mask).argmin(-1).astype(jnp.bfloat16)
+rotary_values = init_rotary_values(leftpad_len, batch_size, max_len, model_config=model_config_llama2_7B)
+print(rotary_values.sin_val.shape)
+
+kv_cache = init_kv_cache(batch_size, max_len, model_config=model_config_llama2_7B)
+kv_cache = jax.tree_map(lambda x: x.astype(jnp.bfloat16), kv_cache)
+
+outputs, kv_cache = forward_llama_model(params.model, seq, attn_mask, rotary_values=rotary_values, kv_cache=kv_cache, key=None, model_config=model_config_llama2_7B._replace(return_kv_cache=True))
+kv_cache_write_pos = attn_mask.argmin().astype(jnp.uint16)
+logits = outputs[:, -1] @ params.lm_head
 
 key, subkey = rand.split(key)
 selected_token_ids = top_k_smapling_from_logits(logits, key=subkey)
+print(tokenizer.batch_decode(selected_token_ids, skip_special_tokens=True))
 
-while cache_position < max_len:
-    seq = seq.at[:, cache_position].set(selected_token_ids)
-    attn_mask = attn_mask.at[:, cache_position].set(True)
+while kv_cache_write_pos < max_len:
+    seq = seq.at[:, kv_cache_write_pos].set(selected_token_ids)
+    attn_mask = attn_mask.at[:, kv_cache_write_pos].set(True)
 
-    outputs, kv_cache = forward_llama_model(params.model, seq, attn_mask, cache_position=cache_position, kv_cache=kv_cache, key=None, model_config=model_config_llama2_7B)
-    cache_position += 1
-    logits = outputs[:, cache_position - 1] @ params.lm_head
+    outputs, kv_cache = forward_llama_model(params.model, seq, attn_mask, rotary_values=rotary_values, kv_cache_write_pos=kv_cache_write_pos, kv_cache=kv_cache, key=None, model_config=model_config_llama2_7B)
+    kv_cache_write_pos += 1
+    logits = outputs[:, kv_cache_write_pos - 1] @ params.lm_head
 
     key, subkey = rand.split(key)
     selected_token_ids = top_k_smapling_from_logits(logits, key=subkey)

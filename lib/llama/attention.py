@@ -13,6 +13,8 @@ from .ModelConfig import ModelConfig
 from .kv_cache import KVCache
 from .rotary_embedding import forward_rotary_embedding
 
+from .rotary_embedding import RotaryValues
+
 class Attention(NamedTuple):
     q_proj: Any  # Array
     k_proj: Any  # Array
@@ -40,20 +42,22 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     return Attention(q_proj, k_proj, v_proj, out_proj)
 
 @partial(jax.jit, static_argnames=('model_config',))
-def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
     k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
     v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')
 
-    if cache_position is not None and kv_cache is not None:
-        k_cache, v_cache = kv_cache
-        start_indices = jnp.array([0, 0, cache_position, 0], dtype=jnp.uint16)
-        k = jax.lax.dynamic_update_slice(k_cache, k, start_indices=start_indices)
-        v = jax.lax.dynamic_update_slice(v_cache, v, start_indices=start_indices)
-        kv_cache = KVCache(k, v)
+    if kv_cache is not None:
+        if k.shape[-2] == 1:  # phrase 2, TODO: avoid hardcoding 1
+            k_cache, v_cache = kv_cache
+            k = k_cache.at[:, :, -1:].set(k)
+            v = v_cache.at[:, :, -1:].set(v)
+            kv_cache = KVCache(k, v)
+        else:  # phrase 1; TODO: avoid passing empty kv cache in
+            kv_cache = KVCache(k, v)
 
-    q = forward_rotary_embedding(q)
-    k = forward_rotary_embedding(k)
+    q = forward_rotary_embedding(q, rotary_values=rotary_values)
+    k = forward_rotary_embedding(k, rotary_values=rotary_values)
 
     qk = op.einsum(q, k, 'B R H S K, B H D K -> B R H S D')
     qk /= math.sqrt(model_config.d_k)

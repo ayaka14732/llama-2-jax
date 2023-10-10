@@ -12,6 +12,8 @@ from .embedding import check_embedding, forward_embedding, init_embedding
 from .kv_cache import KVCache
 from .rms_norm import check_rms_norm, forward_rms_norm, init_rms_norm
 
+from .rotary_embedding import RotaryValues
+
 class LlamaModel(NamedTuple):
     embedding: Any  # Array
     decoder: Decoder
@@ -34,7 +36,7 @@ def init_llama_model(*, key: Array, model_config: ModelConfig) -> LlamaModel:
     return LlamaModel(embedding, decoder, norm)
 
 @partial(jax.jit, static_argnames=('model_config'))
-def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, cache_position: Array | None=None, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     assert isinstance(seq, Array)
     assert isinstance(attn_mask, Array)
     assert seq.dtype == jnp.uint16
@@ -44,6 +46,6 @@ def forward_llama_model(params: LlamaModel, seq: Array, attn_mask: Array, *, cac
     assert key is None or model_config.dropout_rate is not None
 
     seq = forward_embedding(params.embedding, seq)
-    seq, kv_cache = forward_decoder(params.decoder, seq, attn_mask, cache_position=cache_position, kv_cache=kv_cache, key=key, model_config=model_config)
+    seq, kv_cache = forward_decoder(params.decoder, seq, attn_mask, rotary_values=rotary_values, kv_cache=kv_cache, key=key, model_config=model_config)
     seq = forward_rms_norm(params.norm, seq, model_config=model_config)
     return seq, kv_cache

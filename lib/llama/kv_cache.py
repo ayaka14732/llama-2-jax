@@ -2,13 +2,12 @@ from typing import Any, NamedTuple
 
 import jax.numpy as jnp
 
-from .ModelConfig import ModelConfig
-
 class KVCache(NamedTuple):
     k_cache: Any  # Array
     v_cache: Any  # Array
 
-def init_kv_cache(batch_size: int, dst_len: int, *, model_config: ModelConfig) -> KVCache:
-    k_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_k))
-    v_cache = jnp.zeros((model_config.n_layers, batch_size, model_config.n_heads_kv, dst_len, model_config.d_v))
+def shift_left_kv_cache(kv_cache: KVCache) -> KVCache:
+    k_cache, v_cache = kv_cache
+    k_cache = jnp.roll(k_cache, -1, axis=-2)  # -2: dimension L
+    v_cache = jnp.roll(v_cache, -1, axis=-2)  # -2: dimension L
     return KVCache(k_cache, v_cache)

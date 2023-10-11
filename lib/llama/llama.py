@@ -31,7 +31,7 @@ def init_llama(*, key: Array, model_config: ModelConfig) -> Llama:
     return Llama(model, lm_head)
 
 @partial(jax.jit, static_argnames=('model_config'))
-def forward_llama(params: Llama, seq: Array, attn_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
-    outputs, kv_cache = forward_llama_model(params.model, seq, attn_mask, rotary_values=rotary_values, kv_cache=kv_cache, key=key, model_config=model_config)
+def forward_llama(params: Llama, seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
+    outputs, kv_cache = forward_llama_model(params.model, seq, qk_mask, rotary_values=rotary_values, kv_cache=kv_cache, key=key, model_config=model_config)
     logits = outputs @ params.lm_head
     return logits, kv_cache

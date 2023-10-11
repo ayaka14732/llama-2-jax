@@ -47,17 +47,15 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask
     k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')
     v = op.einsum(dst_seq, params.v_proj, 'B D M, M H V -> B H D V')
 
-    if kv_cache is not None:
-        if k.shape[-2] == 1:  # phrase 2, TODO: avoid hardcoding 1
-            k_cache, v_cache = kv_cache
-            k = k_cache.at[:, :, -1:].set(k)
-            v = v_cache.at[:, :, -1:].set(v)
-            kv_cache = KVCache(k, v)
-        else:  # phrase 1; TODO: avoid passing empty kv cache in
-            kv_cache = KVCache(k, v)
-
     q = forward_rotary_embedding(q, rotary_values=rotary_values)
     k = forward_rotary_embedding(k, rotary_values=rotary_values)
+
+    if kv_cache is not None:
+        assert src_seq.shape[1] == 1
+        assert dst_seq.shape[1] == 1
+        k_cache, v_cache = kv_cache
+        k = k_cache.at[:, :, -1:].set(k)
+        v = v_cache.at[:, :, -1:].set(v)
 
     qk = op.einsum(q, k, 'B R H S K, B H D K -> B R H S D')
     qk /= math.sqrt(model_config.d_k)
@@ -66,6 +64,7 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask
     qk = jnp.where(qk_mask, qk, 0)  # TODO: why this line?
 
     qkv = op.einsum(qk, v, 'B R H S D, B H D V -> B R H S V')
-
     out = op.einsum(qkv, params.out_proj, 'B R H S V, R H V M -> B S M')
+    kv_cache = None if not model_config.return_kv_cache else KVCache(k, v)
+
     return out, kv_cache

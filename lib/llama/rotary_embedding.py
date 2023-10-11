@@ -29,7 +29,7 @@ class RotaryValues(NamedTuple):
     sin_val: Array
     cos_val: Array
 
-def init_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int, *, model_config: ModelConfig) -> RotaryValues:
+def make_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int, *, model_config: ModelConfig) -> RotaryValues:
     with jax.ensure_compile_time_eval():
         sin_val, cos_val = _make_weights(seq_len, model_config.d_k)
 
@@ -37,15 +37,16 @@ def init_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int,
     cos_val = jnp.repeat(cos_val[None], batch_size, axis=0)
 
     if leftpad_len is not None:
-        sin_val = jnp.roll(sin_val, leftpad_len, axis=-1)
-        cos_val = jnp.roll(cos_val, leftpad_len, axis=-1)
+        roll_func = jax.vmap(lambda a, shift: jnp.roll(a, shift, axis=-2))  # -2: dimension L
+        sin_val = roll_func(sin_val, leftpad_len)
+        cos_val = roll_func(cos_val, leftpad_len)
 
     return RotaryValues(sin_val, cos_val)
 
-def tap_rotary_values(rotary_values: RotaryValues) -> RotaryValues:
+def shift_left_rotary_values(rotary_values: RotaryValues) -> RotaryValues:
     sin_val, cos_val = rotary_values
-    sin_val = jnp.roll(sin_val, -1, axis=-1)
-    cos_val = jnp.roll(cos_val, -1, axis=-1)
+    sin_val = jnp.roll(sin_val, -1, axis=-2)  # -2: dimension L
+    cos_val = jnp.roll(cos_val, -1, axis=-2)  # -2: dimension L
     return RotaryValues(sin_val, cos_val)
 
 def forward_rotary_embedding(m: Array, *, rotary_values: RotaryValues) -> Array:

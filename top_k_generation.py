@@ -11,9 +11,9 @@ from typing import NamedTuple
 from lib.llama import KVCache, Llama, RotaryValues, forward_llama_model, get_rotary_values_at_position, make_causal_qk_mask, make_rotary_values, model_config_llama2_7B, shift_left_kv_cache
 from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
-from lib.seeding import HASHED_BUDDHA
+from lib.seeding import BEST_INTEGER
 
-max_len = 128
+max_len = 256
 top_k = 4
 
 def load_params_from_disk() -> Llama:
@@ -44,16 +44,7 @@ def while_loop(cond_fun, body_fun, initial_state):
         state = body_fun(state)
     return state
 
-class GenerationState(NamedTuple):
-    seq: Array
-    attn_mask: Array
-    selected_token_ids: Array
-    max_n_iters: Array
-    rotary_values: RotaryValues
-    kv_cache: KVCache
-    rotary_values_position: Array
-    key: Array
-
+@jax.jit
 def generate_first(params: Llama, seq: Array, attn_mask: Array, *, rotary_values: RotaryValues, key: Array) -> tuple[Array, Array, Array, KVCache]:
     qk_mask = make_causal_qk_mask(attn_mask)
     outputs, kv_cache = forward_llama_model(params.model, seq, qk_mask, rotary_values=rotary_values, model_config=model_config_llama2_7B._replace(return_kv_cache=True))
@@ -67,6 +58,17 @@ def generate_first(params: Llama, seq: Array, attn_mask: Array, *, rotary_values
 
     return seq, attn_mask, selected_token_ids, kv_cache
 
+class GenerationState(NamedTuple):
+    seq: Array
+    attn_mask: Array
+    selected_token_ids: Array
+    max_n_iters: Array
+    rotary_values: RotaryValues
+    kv_cache: KVCache
+    rotary_values_position: Array
+    key: Array
+
+@jax.jit
 def generate_rest(params: Llama, seq: Array, attn_mask: Array, selected_token_ids: Array, max_n_iters: Array, *, rotary_values: RotaryValues, kv_cache: KVCache, key: Array):
     def cond_fun(state: GenerationState) -> Array:
         return state.max_n_iters.astype(jnp.bool_)
@@ -120,16 +122,28 @@ def generate(sentences: list[str], tokenizer: LlamaTokenizer, params: Llama, *, 
 def main():
     params = load_params_from_disk()
     print('Successfully loaded model parameters!')
-    key = rand.key(HASHED_BUDDHA, impl='rbg')
+    key = rand.key(BEST_INTEGER, impl='rbg')
     tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf', padding_side='left')
     tokenizer.pad_token = tokenizer.eos_token
-    sentences = [
-        'Complete this sentence: Four score and seven years ago our fathers brought forth',
-        'Generate all possibilities of the continuation of following sentence: I go to school by',
+    batched_sentences = [
+        [
+            'I believe the meaning of life is',
+            'Simply put, the theory of relativity states that ',
+        ],
+        [
+            'Sorry, can I help',
+            '''Translate English to French:
+sea otter => loutre de mer
+peppermint => menthe poivrée
+plush girafe => girafe peluche
+cheese =>''',
+        ]
     ]
-    generated_sentences = generate(sentences, tokenizer, params, key=key)
-    for sentence in generated_sentences:
-        print(sentence)
+    for sentences in batched_sentences:
+        key, subkey = rand.split(key)
+        generated_sentences = generate(sentences, tokenizer, params, key=subkey)
+        for sentence in generated_sentences:
+            print(sentence)
 
 if __name__ == '__main__':
     main()

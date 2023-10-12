@@ -9,7 +9,6 @@ import jax.random as rand
 from .ModelConfig import ModelConfig
 from .kv_cache import KVCache
 from .llama_model import LlamaModel, check_llama_model, forward_llama_model, init_llama_model
-
 from .rotary_embedding import RotaryValues
 
 class Llama(NamedTuple):

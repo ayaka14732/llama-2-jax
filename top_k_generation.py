@@ -48,7 +48,6 @@ def generate(sentences: list[str], tokenizer: LlamaTokenizer, params: Llama, *, 
     assert not attn_mask.all(axis=-1).any()  # every sample has room to generate
 
     # initial forward operation
-    initial_seq_len = seq.shape[1]
     leftpad_len = (~attn_mask).argmin(-1).astype(jnp.uint16)
     rotary_values = make_rotary_values(leftpad_len, batch_size, max_len, model_config=model_config_llama2_7B)
     # print(rotary_values.sin_val.shape)

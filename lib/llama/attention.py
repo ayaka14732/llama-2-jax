@@ -11,9 +11,7 @@ import jax.random as rand
 
 from .ModelConfig import ModelConfig
 from .kv_cache import KVCache
-from .rotary_embedding import forward_rotary_embedding
-
-from .rotary_embedding import RotaryValues
+from .rotary_embedding import RotaryValues, forward_rotary_embedding
 
 class Attention(NamedTuple):
     q_proj: Any  # Array

@@ -29,6 +29,15 @@ class RotaryValues(NamedTuple):
     sin_val: Array
     cos_val: Array
 
+def forward_rotary_embedding(m: Array, *, rotary_values: RotaryValues) -> Array:
+    sin_val, cos_val = rotary_values
+    assert sin_val.dtype == jnp.float32
+    assert cos_val.dtype == jnp.float32
+    n = _rotate_half(m)
+    a = op.einsum(m, cos_val, 'B ... L K, B L K -> B ... L K').astype(m.dtype)
+    b = op.einsum(n, sin_val, 'B ... L K, B L K -> B ... L K').astype(m.dtype)
+    return a + b
+
 def make_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int, *, model_config: ModelConfig) -> RotaryValues:
     with jax.ensure_compile_time_eval():
         sin_val, cos_val = _make_weights(seq_len, model_config.d_k)
@@ -43,17 +52,9 @@ def make_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int,
 
     return RotaryValues(sin_val, cos_val)
 
-def shift_left_rotary_values(rotary_values: RotaryValues) -> RotaryValues:
+def get_rotary_values_at_position(rotary_values: RotaryValues, position: Array) -> RotaryValues:
     sin_val, cos_val = rotary_values
-    sin_val = jnp.roll(sin_val, -1, axis=-2)  # -2: dimension L
-    cos_val = jnp.roll(cos_val, -1, axis=-2)  # -2: dimension L
-    return RotaryValues(sin_val, cos_val)
-
-def forward_rotary_embedding(m: Array, *, rotary_values: RotaryValues) -> Array:
-    sin_val, cos_val = rotary_values
-    assert sin_val.dtype == jnp.float32
-    assert cos_val.dtype == jnp.float32
-    n = _rotate_half(m)
-    a = op.einsum(m, cos_val, 'B ... L K, B L K -> B ... L K').astype(m.dtype)
-    b = op.einsum(n, sin_val, 'B ... L K, B L K -> B ... L K').astype(m.dtype)
-    return a + b
+    sin_val = sin_val[:, position][:, None]
+    cos_val = cos_val[:, position][:, None]
+    rotary_values = RotaryValues(sin_val, cos_val)
+    return rotary_values

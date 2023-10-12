@@ -66,3 +66,9 @@ def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask
     kv_cache = None if not model_config.return_kv_cache else KVCache(k, v)
 
     return out, kv_cache
+
+def make_causal_qk_mask(attn_mask: Array) -> Array:
+    qk_mask = jnp.einsum('bi,bj->bij', attn_mask, attn_mask)
+    qk_mask = jnp.tril(qk_mask)
+    qk_mask = op.rearrange(qk_mask, 'B L1 L2 -> B 1 1 L1 L2')
+    return qk_mask

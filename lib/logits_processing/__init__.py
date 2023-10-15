@@ -1,7 +1,9 @@
+from operator import getitem
 from typing import Callable
 
 import jax
 from jax import Array
+import jax.nn as nn
 import jax.numpy as jnp
 import jax.random as rand
 
@@ -30,7 +32,7 @@ def FrequencyPenaltyProcessor(penalty: float) -> Callable:
 
 def TopKSampler(top_k: int) -> Callable:
     def inner(logits: Array, *, key: Array, **kwargs) -> Array:
-        batch_size, *_ = logits.shape
+        batch_size, _ = logits.shape
         keys = rand.split(key, num=batch_size)
 
         def inner_inner(logits: Array, key: Array) -> Array:
@@ -45,7 +47,26 @@ def TopKSampler(top_k: int) -> Callable:
     setattr(inner, 'requires_key', True)
     return inner
 
-def chain(*callables):
+def TopPSampler(top_p: float) -> Callable:
+    def inner(logits: Array, *, key: Array, **kwargs) -> Array:
+        batch_size, vocab_size = logits.shape
+
+        indices = jnp.broadcast_to(jnp.arange(vocab_size, dtype=jnp.uint16), (batch_size, vocab_size))
+        sorted_logits, sorted_indices = jax.lax.sort_key_val(-logits, indices, is_stable=False)
+        sorted_logits = -sorted_logits
+        sorted_probs = nn.softmax(sorted_logits)
+        cum_probs = jnp.cumsum(sorted_probs, axis=-1)
+        threshold_probs = jnp.maximum(cum_probs[:, 0], top_p)  # guarantee that at least one token will not be masked
+        masked_sorted_logits = jnp.where(cum_probs >= threshold_probs[:, None], -jnp.inf, sorted_logits)
+
+        key, subkey = rand.split(key)
+        selected_indices = rand.categorical(subkey, masked_sorted_logits)
+        selected_token_ids = jax.vmap(getitem)(sorted_indices, selected_indices)  # type: ignore[call-overload]
+        return selected_token_ids
+    setattr(inner, 'requires_key', True)
+    return inner
+
+def make_logits_processor(*callables):
     def inner(logits: Array, seq: Array, attn_mask: Array, key: Array | None) -> Array:
         for f in callables:
             if not getattr(f, 'requires_key', False):

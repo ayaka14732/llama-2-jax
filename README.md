@@ -45,7 +45,7 @@ This project is supported by Cloud TPUs from Google's [TPU Research Cloud](https
     - [ ] Beam search
     - [ ] Beam sampling
     - [x] Top-_k_ sampling
-    - [ ] Top-_p_ sampling
+    - [x] Top-_p_ sampling
 - [ ] [Documentation](.github/workflows/publish.yml)
 
 The documentation of the library of this project is published on [GitHub Pages](https://ayaka14732.github.io/llama-2-jax/).

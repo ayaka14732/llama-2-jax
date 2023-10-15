@@ -5,7 +5,6 @@ class ModelConfig(NamedTuple):
     d_k: int
     d_model: int
     d_v: int
-    dropout_rate: float | None
     n_heads_kv: int
     n_layers: int
     n_rep_kv: int
@@ -15,12 +14,15 @@ class ModelConfig(NamedTuple):
     token_id_pad: int
     vocab_size: int
 
+    # TODO: move out of model config
+    dropout_rate: float | None
+    return_kv_cache: bool
+
 model_config_dummy = ModelConfig(
     d_ff=32,
     d_k=32,
     d_model=15,
     d_v=16,
-    dropout_rate=0.1,
     n_heads_kv=32,
     n_layers=3,
     n_rep_kv=2,
@@ -29,6 +31,8 @@ model_config_dummy = ModelConfig(
     token_id_eos=2,
     token_id_pad=0,
     vocab_size=32000,
+    dropout_rate=0.1,
+    return_kv_cache=False,
 )
 
 model_config_llama1_7B = ModelConfig(
@@ -36,7 +40,6 @@ model_config_llama1_7B = ModelConfig(
     d_k=128,
     d_model=4096,
     d_v=128,
-    dropout_rate=0.1,
     n_heads_kv=32,
     n_layers=32,
     n_rep_kv=1,
@@ -45,6 +48,8 @@ model_config_llama1_7B = ModelConfig(
     token_id_eos=2,
     token_id_pad=0,
     vocab_size=32000,
+    dropout_rate=0.1,
+    return_kv_cache=False,
 )
 
 model_config_llama2_7B = model_config_llama1_7B
@@ -54,7 +59,6 @@ model_config_llama2_13B = ModelConfig(
     d_k=128,
     d_model=5120,
     d_v=128,
-    dropout_rate=0.1,
     n_heads_kv=40,
     n_layers=40,
     n_rep_kv=1,
@@ -63,6 +67,8 @@ model_config_llama2_13B = ModelConfig(
     token_id_eos=2,
     token_id_pad=0,
     vocab_size=32000,
+    dropout_rate=0.1,
+    return_kv_cache=False,
 )
 
 model_config_llama2_70B = ModelConfig(
@@ -70,7 +76,6 @@ model_config_llama2_70B = ModelConfig(
     d_k=128,
     d_model=8192,
     d_v=128,
-    dropout_rate=0.1,
     n_heads_kv=8,
     n_layers=80,
     n_rep_kv=8,
@@ -79,4 +84,6 @@ model_config_llama2_70B = ModelConfig(
     token_id_eos=2,
     token_id_pad=0,
     vocab_size=32000,
+    dropout_rate=0.1,
+    return_kv_cache=False,
 )

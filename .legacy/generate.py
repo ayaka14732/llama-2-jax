@@ -30,7 +30,7 @@ def main() -> None:
         print(jax.devices)
     initialise_tracking()
 
-    key = rand.key(BEST_INTEGER)
+    key = rand.key(BEST_INTEGER, impl='rbg')
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params('llama2-7B.pickle')

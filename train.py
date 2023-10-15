@@ -89,7 +89,7 @@ def main() -> None:
     if is_process_0:
         wandb.init(project='llama-finetuning-gsm', config=dict(learning_rate=lr, batch_size=batch_size * n_accumulation_steps, n_epochs=n_epochs, optimiser='adamw'))
 
-    key = rand.key(seed)
+    key = rand.key(seed, impl='rbg')
     tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf')
     dataset = GSMDataset(split='train')
     collate_fn = partial(gsm_collate_fn_train, tokenizer, max_len)

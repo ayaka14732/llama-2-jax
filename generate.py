@@ -8,13 +8,13 @@ import jax.random as rand
 from transformers import LlamaTokenizer
 from typing import NamedTuple
 
-from lib.llama import KVCache, Llama, RotaryValues, forward_llama_model, get_rotary_values_at_position, make_causal_qk_mask, make_rotary_values, model_config_llama2_7B, shift_left_kv_cache
+from lib.llama import KVCache, Llama, RotaryValues, forward_llama_model, get_rotary_values_at_position, make_rotary_values, model_config_llama2_7B, shift_left_kv_cache
 from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
 from lib.seeding import BEST_INTEGER
 
 max_len = 256
-top_k = 4
+top_k = 1
 
 def load_params_from_disk() -> Llama:
     cpu_device = jax.devices('cpu')[0]
@@ -38,15 +38,9 @@ def top_k_sampling_from_logits(logits: Array, *, key: Array) -> Array:
     selected_token_ids = jax.vmap(inner)(logits, keys)
     return selected_token_ids
 
-def while_loop(cond_fun, body_fun, initial_state):
-    state = initial_state
-    while cond_fun(state):
-        state = body_fun(state)
-    return state
-
-@jax.jit
+# @jax.jit
 def generate_first(params: Llama, seq: Array, attn_mask: Array, *, rotary_values: RotaryValues, key: Array) -> tuple[Array, Array, Array, KVCache]:
-    qk_mask = make_causal_qk_mask(attn_mask)
+    qk_mask = op.rearrange(jnp.tril(op.einsum(attn_mask, attn_mask, 'B L1, B L2 -> B L1 L2')), 'B L1 L2 -> B 1 1 L1 L2')  # causal QK mask
     outputs, kv_cache = forward_llama_model(params.model, seq, qk_mask, rotary_values=rotary_values, model_config=model_config_llama2_7B._replace(return_kv_cache=True))
 
     logits = outputs[:, -1] @ params.lm_head
@@ -64,17 +58,17 @@ class GenerationState(NamedTuple):
     selected_token_ids: Array
     max_n_iters: Array
     rotary_values: RotaryValues
-    kv_cache: KVCache
     rotary_values_position: Array
+    kv_cache: KVCache
     key: Array
 
 @jax.jit
-def generate_rest(params: Llama, seq: Array, attn_mask: Array, selected_token_ids: Array, max_n_iters: Array, *, rotary_values: RotaryValues, kv_cache: KVCache, key: Array):
+def generate_rest(params: Llama, seq: Array, attn_mask: Array, selected_token_ids: Array, max_n_iters: Array, *, rotary_values: RotaryValues, kv_cache: KVCache, key: Array) -> Array:
     def cond_fun(state: GenerationState) -> Array:
         return state.max_n_iters.astype(jnp.bool_)
 
     def body_fun(state: GenerationState) -> GenerationState:
-        seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, kv_cache, rotary_values_position, key = state
+        seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, rotary_values_position, kv_cache, key = state
 
         seq_ = op.rearrange(selected_token_ids, 'B -> B 1')
         qk_mask = op.rearrange(attn_mask, 'B L -> B 1 1 1 L')
@@ -91,11 +85,12 @@ def generate_rest(params: Llama, seq: Array, attn_mask: Array, selected_token_id
 
         rotary_values_position += 1
         max_n_iters -= 1
+        # TODO: early stopping
 
-        return GenerationState(seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, kv_cache, rotary_values_position, key)
+        return GenerationState(seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, rotary_values_position, kv_cache, key)
 
     rotary_values_position = jnp.array(0, jnp.uint16)
-    initial_state = GenerationState(seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, kv_cache, rotary_values_position, key)
+    initial_state = GenerationState(seq, attn_mask, selected_token_ids, max_n_iters, rotary_values, rotary_values_position, kv_cache, key)
     final_state = jax.lax.while_loop(cond_fun, body_fun, initial_state)
     return final_state.seq
 
@@ -107,7 +102,7 @@ def generate(sentences: list[str], tokenizer: LlamaTokenizer, params: Llama, *, 
     attn_mask = inputs.attention_mask.astype(jnp.bool_)
     assert not attn_mask.all(axis=-1).any(), 'No room for generation since the length of a sentence is greater than `max_length`.'
 
-    leftpad_len = attn_mask.argmax(-1).astype(jnp.uint16)
+    leftpad_len = attn_mask.argmax(axis=-1).astype(jnp.uint16)
     rotary_values = make_rotary_values(leftpad_len, batch_size, max_len, model_config=model_config_llama2_7B)
 
     key, subkey = rand.split(key)
@@ -115,7 +110,7 @@ def generate(sentences: list[str], tokenizer: LlamaTokenizer, params: Llama, *, 
 
     max_n_iters = leftpad_len.min()
     key, subkey = rand.split(key)
-    seq = generate_rest(params, seq, attn_mask, selected_token_ids, max_n_iters, rotary_values=rotary_values, kv_cache=kv_cache, key=key)
+    seq = generate_rest(params, seq, attn_mask, selected_token_ids, max_n_iters, rotary_values=rotary_values, kv_cache=kv_cache, key=subkey)
 
     return tokenizer.batch_decode(seq, skip_special_tokens=True)
 
@@ -127,16 +122,7 @@ def main():
     tokenizer.pad_token = tokenizer.eos_token
     batched_sentences = [
         [
-            'I believe the meaning of life is',
-            'Simply put, the theory of relativity states that ',
-        ],
-        [
-            'Sorry, can I help',
-            '''Translate English to French:
-sea otter => loutre de mer
-peppermint => menthe poivrée
-plush girafe => girafe peluche
-cheese =>''',
+            'Four score and seven years ago',
         ]
     ]
     for sentences in batched_sentences:

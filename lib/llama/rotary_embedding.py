@@ -39,8 +39,7 @@ def forward_rotary_embedding(m: Array, *, rotary_values: RotaryValues) -> Array:
     return a + b
 
 def make_rotary_values(leftpad_len: Array | None, batch_size: int, seq_len: int, *, model_config: ModelConfig) -> RotaryValues:
-    with jax.ensure_compile_time_eval():
-        sin_val, cos_val = _make_weights(seq_len, model_config.d_k)
+    sin_val, cos_val = _make_weights(seq_len, model_config.d_k)
 
     sin_val = jnp.repeat(sin_val[None], batch_size, axis=0)
     cos_val = jnp.repeat(cos_val[None], batch_size, axis=0)

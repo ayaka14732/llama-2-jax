@@ -1,3 +1,4 @@
+import einops as op
 from functools import partial
 import jax
 from jax import Array
@@ -17,7 +18,7 @@ import wandb
 from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, gsm_collate_fn_train
-from lib.llama import Llama, forward_llama, init_llama, model_config_llama2_7B
+from lib.llama import Llama, RotaryValues, forward_llama, init_llama, make_rotary_values, model_config_llama2_7B
 from lib.loss import cross_entropy_loss
 from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params
@@ -56,16 +57,17 @@ def save_params_signal_handler(signum, frame):
     exit(-1)
 
 @jax.value_and_grad
-def train_forward(params: Llama, data_batch: TrainData, *, key: Array):
+def train_forward(params: Llama, rotary_values: RotaryValues, data_batch: TrainData, *, key: Array):
     seq, seq_mask, labels, labels_mask = data_batch
-    logits = forward_llama(params, seq, seq_mask, key=key, model_config=model_config_llama2_7B)
+    qk_mask = op.rearrange(jnp.tril(op.einsum(seq_mask, seq_mask, 'B L1, B L2 -> B L1 L2')), 'B L1 L2 -> B 1 1 L1 L2')  # causal QK mask
+    logits = forward_llama(params, seq, qk_mask, rotary_values=rotary_values, key=key, model_config=model_config_llama2_7B)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 
 @jax.jit
-def train_step(params: Llama, opt_state: Any, total_loss: Array, data_batch: TrainData, key: Array) -> tuple[Llama, Any, Array, Array, Array]:
+def train_step(params: Llama, opt_state: Any, rotary_values: RotaryValues, total_loss: Array, data_batch: TrainData, key: Array) -> tuple[Llama, Any, Array, Array, Array]:
     key, subkey = rand.split(key)
-    loss, grads = train_forward(params, data_batch, key=subkey)
+    loss, grads = train_forward(params, rotary_values, data_batch, key=subkey)
     total_loss += loss
     updates, opt_state = optimize(grads, opt_state, params)  # type: ignore
     params = optax.apply_updates(params, updates)
@@ -111,6 +113,8 @@ def main() -> None:
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 
+    rotary_values = make_rotary_values(None, batch_size, max_len, model_config=model_config_llama2_7B)
+
     for _ in range(n_epochs):
         pbar = tqdm(total=len(dataloader) // n_accumulation_steps)
         step_loss = 0.0
@@ -127,7 +131,7 @@ def main() -> None:
 
         for step, data_batch in enumerate(dataloader):
             start_time = time.time()
-            params, opt_state, total_loss, loss, key = train_step(params, opt_state, total_loss, data_batch, key)
+            params, opt_state, total_loss, loss, key = train_step(params, opt_state, rotary_values, total_loss, data_batch, key)
             if is_process_0:
                 jax.debug.callback(report_to_wandb, start_time, opt_state, loss)
 

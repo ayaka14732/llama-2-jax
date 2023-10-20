@@ -164,7 +164,7 @@ python generate.py
 On TPU pods, the command is:
 
 ```sh
-./podrun -icw python generate.py
+./podrun -icw ~/venv/bin/python generate.py
 ```
 
 ### Login into W&B
@@ -192,7 +192,7 @@ python train.py
 On TPU pods, the command is:
 
 ```sh
-./podrun -icw python train.py
+./podrun -icw ~/venv/bin/python train.py
 ```
 
 ## Model Configurations

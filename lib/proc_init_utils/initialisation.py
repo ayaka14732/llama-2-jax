@@ -86,6 +86,6 @@ def initialise_tpu(accelerator_type: str, n_devices: int | None=None, rank: int=
         else:
             raise ValueError(f'Invalid value `n_devices`: {n_devices}')
     else:
-        raise NotImplementedError('Only the initialisation on Cloud TPU v3-8 and v4-16 is supported.')
+        raise NotImplementedError(f'The initialisation on Cloud TPU {accelerator_type} is not supported.')
 
     _post_init_general()

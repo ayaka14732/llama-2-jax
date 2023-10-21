@@ -1,3 +1,5 @@
+from lib.proc_init_utils import initialise_tpu; initialise_tpu('v3-32')
+
 import einops as op
 from functools import partial
 import jax
@@ -22,7 +24,6 @@ from lib.llama import Llama, RotaryValues, forward_llama, init_llama, make_rotar
 from lib.loss import cross_entropy_loss
 from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params
-from lib.proc_init_utils import initialise_tpu
 
 is_process_0: bool
 params: Llama
@@ -60,7 +61,7 @@ def save_params_signal_handler(signum, frame):
 def train_forward(params: Llama, rotary_values: RotaryValues, data_batch: TrainData, *, key: Array):
     seq, seq_mask, labels, labels_mask = data_batch
     qk_mask = op.rearrange(jnp.tril(op.einsum(seq_mask, seq_mask, 'B L1, B L2 -> B L1 L2')), 'B L1 L2 -> B 1 1 L1 L2')  # causal QK mask
-    logits = forward_llama(params, seq, qk_mask, rotary_values=rotary_values, key=key, model_config=model_config_llama2_7B)
+    logits, _ = forward_llama(params, seq, qk_mask, rotary_values=rotary_values, key=key, model_config=model_config_llama2_7B)
     loss = cross_entropy_loss(logits, labels, mask=labels_mask)
     return loss
 
@@ -83,7 +84,6 @@ def main() -> None:
     n_epochs = 7
     seed = 3407
 
-    initialise_tpu('v3-32')
     jax.distributed.initialize()
     jax_smi.initialise_tracking()
     is_process_0 = jax.process_index() == 0

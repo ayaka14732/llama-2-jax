@@ -1,5 +1,3 @@
-from functools import partial
-
 import jax
 from jax import Array
 import jax.random as rand
@@ -21,7 +19,6 @@ def check_decoder(params: Decoder, *, model_config: ModelConfig) -> None:
 def init_decoder(*, key: Array, model_config: ModelConfig) -> Decoder:
     return stack_leaves([init_decoder_block(key=subkey, model_config=model_config) for subkey in rand.split(key, num=model_config.n_layers)])
 
-@partial(jax.jit, static_argnames=('model_config',))
 def forward_decoder(params: Decoder, seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     def inner(state, input_):
         key, seq = state

@@ -24,7 +24,8 @@ def convert(target: str, save_path: str = '') -> None:
     params = convert_llama(model_pt, model_config=model_config)
     params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
     check_llama(params, model_config=model_config)
-    
+
+    print(f'Converted parameters for {target}')
     # Define the file name and path
     file_name = f'{target}.pickle'
     if save_path:
@@ -34,8 +35,9 @@ def convert(target: str, save_path: str = '') -> None:
 
     # Save the parameters
     save_params(params, file_path)
-
+    print(f'Parameters saved to {file_path}')
     # Upload the file to Hugging Face
+    print('Uploading to Hugging Face...')
     api = HfApi()
     repo_id = f'divyapatel4/{target}-hf-jax'  # Define the repo_id based on the target
     api.upload_file(

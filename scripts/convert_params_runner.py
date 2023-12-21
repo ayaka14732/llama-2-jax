@@ -1,5 +1,6 @@
 from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent))
 from lib.proc_init_utils import initialise_cpu; initialise_cpu()
+from huggingface_hub import HfApi
 
 import fire
 import jax
@@ -19,14 +20,32 @@ pairs = {
 
 def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
-    model_pt = LlamaForCausalLM.from_pretrained(path)  # cannot use `torch_dtype=torch.bfloat16` here, see https://github.com/pytorch/pytorch/issues/101781
+    model_pt = LlamaForCausalLM.from_pretrained(path)
     params = convert_llama(model_pt, model_config=model_config)
     params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
     check_llama(params, model_config=model_config)
+    
+    # Define the file name and path
+    file_name = f'{target}.pickle'
     if save_path:
-        save_params(params, f'{save_path}/{target}.pickle')
+        file_path = f'{save_path}/{file_name}'
     else:
-        save_params(params, f'{target}.pickle')
+        file_path = file_name
+
+    # Save the parameters
+    save_params(params, file_path)
+
+    # Upload the file to Hugging Face
+    api = HfApi()
+    repo_id = f'divyapatel4/{target}-hf-jax'  # Define the repo_id based on the target
+    api.upload_file(
+        path_or_fileobj=file_path,
+        path_in_repo=file_name,
+        repo_id=repo_id,
+        repo_type="model",
+    )
+
 
 if __name__ == '__main__':
   fire.Fire(convert)
+

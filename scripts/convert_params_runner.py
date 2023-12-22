@@ -16,7 +16,9 @@ pairs = {
     'llama2-7B': ('meta-llama/Llama-2-7b-hf', model_config_llama2_7B),
     'llama2-13B': ('meta-llama/Llama-2-13b-hf', model_config_llama2_13B),
     'llama2-70B': ('meta-llama/Llama-2-70b-hf', model_config_llama2_70B),
-    'llama2-70B-8bit':('caisarl76/llama2-70B-8bit', model_config_llama2_70B),
+    'llama2-7B-chat': ('meta-llama/Llama-2-7b-chat-hf', model_config_llama2_7B),
+    'llama2-13B-chat': ('meta-llama/Llama-2-13b-chat-hf', model_config_llama2_13B),
+    'llama2-70B-chat': ('meta-llama/Llama-2-70b-chat-hf', model_config_llama2_70B),
 }
 
 def convert(target: str, save_path: str = '') -> None:

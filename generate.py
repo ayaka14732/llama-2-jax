@@ -2,7 +2,6 @@ import jax
 import jax.numpy as jnp
 import jax.random as rand
 from transformers import LlamaTokenizer
-
 from lib.generation import generate
 from lib.llama import Llama
 from lib.logits_processing import PresencePenaltyProcessor, TopKSampler, TopPSampler, make_logits_processor

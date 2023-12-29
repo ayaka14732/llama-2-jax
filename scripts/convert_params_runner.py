@@ -1,7 +1,7 @@
 from pathlib import Path; import sys; sys.path.append(str(Path(__file__).resolve().parent.parent))
 from lib.proc_init_utils import initialise_cpu; initialise_cpu()
 from huggingface_hub import HfApi
-
+import torch
 import fire
 import jax
 import jax.numpy as jnp
@@ -23,7 +23,7 @@ pairs = {
 
 def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
-    model_pt = LlamaForCausalLM.from_pretrained(path)
+    model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype=torch.bfloat16) 
     params = convert_llama(model_pt, model_config=model_config)
     params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
     check_llama(params, model_config=model_config)

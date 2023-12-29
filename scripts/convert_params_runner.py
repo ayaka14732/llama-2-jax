@@ -6,7 +6,7 @@ import fire
 import jax
 import jax.numpy as jnp
 from transformers import LlamaForCausalLM
-
+import gc
 from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B
 from lib.llama_params import convert_llama
 from lib.param_utils import save_params
@@ -25,6 +25,8 @@ def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
     model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype= torch.float16)
     params = convert_llama(model_pt, model_config=model_config)
+    del model_pt
+    gc.collect()
     params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
     check_llama(params, model_config=model_config)
 

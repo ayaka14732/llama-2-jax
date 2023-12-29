@@ -3,7 +3,7 @@ import torch
 import torch.nn as tnn
 from transformers import LlamaForCausalLM, LlamaModel as LlamaModelPt
 from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecoderLayer
-
+import gc
 from ..array_utils import pt2jax
 from ..llama import Llama, LlamaModel, ModelConfig
 from ..llama.attention import Attention
@@ -30,6 +30,7 @@ def convert_attention(x: LlamaAttention, *, model_config: ModelConfig) -> Attent
     k_proj = convert_k_proj(x.k_proj, model_config=model_config)
     v_proj = convert_v_proj(x.v_proj, model_config=model_config)
     out_proj = convert_out_proj(x.o_proj, model_config=model_config)
+    gc.collect()
     return Attention(q_proj=q_proj, k_proj=k_proj, v_proj=v_proj, out_proj=out_proj)
 
 def convert_decoder_block(x: LlamaDecoderLayer, *, model_config: ModelConfig) -> DecoderBlock:
@@ -39,12 +40,14 @@ def convert_decoder_block(x: LlamaDecoderLayer, *, model_config: ModelConfig) ->
     gate_proj = convert_proj(x.mlp.gate_proj)
     up_proj = convert_proj(x.mlp.up_proj)
     down_proj = convert_proj(x.mlp.down_proj)
+    gc.collect()
     return DecoderBlock(input_norm=input_norm, attention=attention, post_attn_norm=post_attn_norm, gate_proj=gate_proj, up_proj=up_proj, down_proj=down_proj)
 
 def convert_llama_model(model: LlamaModelPt, *, model_config: ModelConfig) -> LlamaModel:
     embedding = pt2jax(model.embed_tokens.weight)
     decoder = stack_leaves([convert_decoder_block(model.layers[i], model_config=model_config) for i in range(model_config.n_layers)])
     norm = pt2jax(model.norm.weight)
+    gc.collect()
     return LlamaModel(embedding=embedding, decoder=decoder, norm=norm)
 
 def convert_llama(model_pt: LlamaForCausalLM, *, model_config: ModelConfig) -> Llama:

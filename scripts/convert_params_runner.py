@@ -23,11 +23,11 @@ pairs = {
 
 def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
-    model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype= torch.float16)
+    model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype= torch.uint8)
     params = convert_llama(model_pt, model_config=model_config)
     del model_pt
     gc.collect()
-    params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
+    params = jax.tree_map(lambda x: x.astype(jnp.uint8), params)
     check_llama(params, model_config=model_config)
 
     print(f'Converted parameters for {target}')

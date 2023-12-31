@@ -14,6 +14,7 @@ from lib.llama_params import convert_llama
 from lib.param_utils import save_params
 import aqt.jax.v2.flax.aqt_flax as aqt
 import aqt.jax.v2.config as aqt_config
+import jax.numpy as jnp
 
 pairs = {
     'llama1-7B': ('../llama-weights/llama1-7B', model_config_llama1_7B),
@@ -33,7 +34,8 @@ def convert(target: str, save_path: str = '') -> None:
     
     gc.collect()
     # Quantize the parameters to 8-bit using AQT
-    params = aqt.quantize(params, num_bits=8)
+    aqt_config = aqt.AqtConfig(forward_dtype=jnp.int8, backward_dtype=jnp.int8)
+    params = aqt.inject(params, aqt_config)
     check_llama(params, model_config=model_config)
 
     print(f'Converted parameters for {target}')

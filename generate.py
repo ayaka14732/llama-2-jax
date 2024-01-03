@@ -9,11 +9,11 @@ from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
 from lib.seeding import BEST_INTEGER
 
-def load_params_from_disk() -> Llama:
+def load_params_from_disk(pickle_file: str = 'llama2-7B.pickle') -> Llama:
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
-        params = load_params('llama2-7B.pickle')
-        params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
+        params = load_params(pickle_file)
+        params = jax.tree_map(lambda x: x.astype(jnp.float16), params)
     params = shard_model_params(params)
     return params
 
@@ -26,7 +26,7 @@ def main():
     print('Successfully loaded model parameters!')
 
     key = rand.key(BEST_INTEGER, impl='rbg')
-    tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf', padding_side='left')
+    tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-70b-chat-hf', padding_side='left')
     tokenizer.pad_token = tokenizer.eos_token
 
     logits_processor = make_logits_processor(

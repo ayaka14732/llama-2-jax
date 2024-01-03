@@ -1,3 +1,4 @@
+import argparse
 import jax
 import jax.numpy as jnp
 import jax.random as rand
@@ -9,7 +10,7 @@ from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
 from lib.seeding import BEST_INTEGER
 
-def load_params_from_disk(pickle_file: str = 'llama2-7B.pickle') -> Llama:
+def load_params_from_disk(pickle_file: str) -> Llama:
     cpu_device = jax.devices('cpu')[0]
     with jax.default_device(cpu_device):
         params = load_params(pickle_file)
@@ -17,12 +18,12 @@ def load_params_from_disk(pickle_file: str = 'llama2-7B.pickle') -> Llama:
     params = shard_model_params(params)
     return params
 
-def main():
+def main(pickle_file):
     top_k = 6
     # top_p = 0.05
     max_len = 256
 
-    params = load_params_from_disk()
+    params = load_params_from_disk(pickle_file)
     print('Successfully loaded model parameters!')
 
     key = rand.key(BEST_INTEGER, impl='rbg')
@@ -53,4 +54,7 @@ def main():
             print(sentence, end='\n\n')
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='Generate text with Llama model.')
+    parser.add_argument('pickle_file', type=str, help='The pickle file to load parameters from.')
+    args = parser.parse_args()
+    main(args.pickle_file)

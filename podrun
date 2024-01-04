@@ -16,10 +16,9 @@ def run_command(hosts, command, activate_venv=False):
         try:
             if activate_venv:
                 command = f'. venv/bin/activate; {command}'
-            command_str = ' '.join(command)  # Join the command arguments into a single string
-            group.run(command_str)
+            group.run(command)
         except Exception as e:
-            print(f"An error occurred while executing the command: {command_str}. Error: {str(e)}")
+            print(f"An error occurred while executing the command: {command}. Error: {str(e)}")
 
 setup_commands_pyt = [
         "sudo add-apt-repository -y ppa:deadsnakes/ppa",

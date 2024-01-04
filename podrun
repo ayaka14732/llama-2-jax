@@ -13,9 +13,12 @@ def get_ips():
 
 def run_command(hosts, command, activate_venv=False):
     with fabric.ThreadingGroup(*hosts) as group:
-        if activate_venv:
-            command = f'. venv/bin/activate; {command}'
-        group.run(command)
+        try:
+            if activate_venv:
+                command = f'. venv/bin/activate; {command}'
+            group.run(command)
+        except Exception as e:
+            print(f"An error occurred while executing the command: {command}. Error: {str(e)}")
 
 setup_commands_pyt = [
         "sudo add-apt-repository -y ppa:deadsnakes/ppa",
@@ -34,8 +37,8 @@ setup_cmd= [
         "pip install -r llama-2-jax/requirements.txt",
         "sudo apt-get install libpython3.11",
         "python -c \"from huggingface_hub.hf_api import HfFolder; HfFolder.save_token('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')\"",
-        "export TRANSFORMERS_CACHE=/mnt/mydisk1/huggingface/cache",
     ]
+    # "export TRANSFORMERS_CACHE=/mnt/mydisk1/huggingface/cache",
 def main():
     parser = argparse.ArgumentParser(description='A helper script to execute commands on multiple hosts of a TPU pod.')
     parser.add_argument('-i', '--include-local', action='store_true', help='include local host (127.0.0.1) in the host list')

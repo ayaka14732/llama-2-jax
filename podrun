@@ -53,6 +53,7 @@ def main():
     if args.include_local:
         hosts.append('127.0.0.1')
 
+    command = args.command.split(' ')
     command = ' '.join(shell_escape(command) for command in args.command)
     print(f'Executing command:{command}')
         

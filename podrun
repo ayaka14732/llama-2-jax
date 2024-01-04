@@ -65,7 +65,8 @@ def main():
         for cmd in setup_cmd:
             run_command(hosts, cmd, activate_venv=True)
             
-    run_command(hosts, command, activate_venv=args.venv)
+    else:
+        run_command(hosts, command, activate_venv=args.venv)
 
 if __name__ == '__main__':
     main()

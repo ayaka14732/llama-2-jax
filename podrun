@@ -51,6 +51,7 @@ def main():
         hosts.append('127.0.0.1')
 
     command = ' '.join(shell_escape(command) for command in args.command)
+    print(f'Executing command:{command}')
         
     if command == "setup":
         for cmd in setup_commands_pyt:
@@ -59,14 +60,14 @@ def main():
             run_command(hosts, cmd, activate_venv=True)
             
     else:
+        if args.clean_up:
+            command = f'sudo rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
+
+        if args.cwd:
+            cwd = os.getcwd()
+            command = f'cd {cwd}; {command}'
+        
         run_command(hosts, command, activate_venv=args.venv)
-
-    if args.clean_up:
-        command = f'sudo rm -rf /tmp/libtpu_lockfile /tmp/tpu_logs; {command}'
-
-    if args.cwd:
-        cwd = os.getcwd()
-        command = f'cd {cwd}; {command}'
 
 if __name__ == '__main__':
     main()

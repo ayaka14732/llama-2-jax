@@ -27,7 +27,7 @@ def main(pickle_file):
     print('Successfully loaded model parameters!')
 
     key = rand.key(BEST_INTEGER, impl='rbg')
-    tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-70b-chat-hf', padding_side='left')
+    tokenizer = LlamaTokenizer.from_pretrained('meta-llama/Llama-2-7b-hf', padding_side='left')
     tokenizer.pad_token = tokenizer.eos_token
 
     logits_processor = make_logits_processor(

@@ -56,7 +56,6 @@ def main():
 
     command = ' '.join(shell_escape(command) for command in args.command)
     print(f'Executing command:{command}')
-    command = command.replace(' ','\' \'')
         
     if command == "\'setup\'":
         for cmd in setup_commands_pyt:

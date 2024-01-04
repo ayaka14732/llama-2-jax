@@ -53,7 +53,7 @@ def main():
     command = ' '.join(shell_escape(command) for command in args.command)
     print(f'Executing command:{command}')
         
-    if command == "setup":
+    if command == "\'setup\'":
         for cmd in setup_commands_pyt:
             run_command(hosts, cmd)
         for cmd in setup_cmd:

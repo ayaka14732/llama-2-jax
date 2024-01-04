@@ -9,6 +9,7 @@ from lib.logits_processing import PresencePenaltyProcessor, TopKSampler, TopPSam
 from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params
 from lib.seeding import BEST_INTEGER
+import jax_smi
 
 def load_params_from_disk(pickle_file: str) -> Llama:
     cpu_device = jax.devices('cpu')[0]
@@ -23,6 +24,13 @@ def main(pickle_file):
     # top_p = 0.05
     max_len = 256
 
+    
+    jax.distributed.initialize()
+    jax_smi.initialise_tracking()
+    
+    print('CONNECTED TPUs:', jax.device_count())
+    print('LOCAL_DEVICES:', jax.local_devices())
+    
     params = load_params_from_disk(pickle_file)
     print('Successfully loaded model parameters!')
 

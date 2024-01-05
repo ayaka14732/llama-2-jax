@@ -14,7 +14,7 @@ m = model.model.layers[0].mlp.gate_proj.weight.shape[1]
 n = len(model.model.layers)
 r = q_size // k_size
 h = model.config.num_attention_heads // r
-k = q_size // m // h
+k = k_size // m // h
 
 n_params = sum(x.numel() for x in model.parameters())
 

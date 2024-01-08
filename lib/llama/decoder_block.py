@@ -1,4 +1,3 @@
-from functools import partial
 import math
 from typing import Any, NamedTuple
 
@@ -48,7 +47,6 @@ def init_decoder_block(*, key: Array, model_config: ModelConfig) -> DecoderBlock
     down_proj = rand.truncated_normal(key3, -upper, upper, (model_config.d_ff, model_config.d_model))
     return DecoderBlock(input_norm, attention, post_attn_norm, gate_proj, up_proj, down_proj)
 
-@partial(jax.jit, static_argnames=('model_config',))
 def forward_decoder_block(params: DecoderBlock, seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     key0, key1, key2 = split_key_nullable(key, num=3)
 

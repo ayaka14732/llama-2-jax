@@ -1,7 +1,5 @@
-from functools import partial
 from typing import Any, NamedTuple
 
-import jax
 from jax import Array
 import jax.numpy as jnp
 import jax.random as rand
@@ -34,7 +32,6 @@ def init_llama_model(*, key: Array, model_config: ModelConfig) -> LlamaModel:
     norm = init_rms_norm(model_config=model_config)
     return LlamaModel(embedding, decoder, norm)
 
-@partial(jax.jit, static_argnames=('model_config'))
 def forward_llama_model(params: LlamaModel, seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, key: Array | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     assert isinstance(seq, Array)
     assert isinstance(qk_mask, Array)

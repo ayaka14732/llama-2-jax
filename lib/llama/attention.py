@@ -1,9 +1,7 @@
-from functools import partial
 import math
 from typing import Any, NamedTuple
 
 import einops as op
-import jax
 from jax import Array
 import jax.nn as nn
 import jax.numpy as jnp
@@ -39,7 +37,6 @@ def init_attention(*, key: Array, model_config: ModelConfig) -> Attention:
     out_proj = rand.truncated_normal(key3, -upper, upper, (model_config.n_rep_kv, model_config.n_heads_kv, model_config.d_v, model_config.d_model))
     return Attention(q_proj, k_proj, v_proj, out_proj)
 
-@partial(jax.jit, static_argnames=('model_config',))
 def forward_attention(params: Attention, src_seq: Array, dst_seq: Array, qk_mask: Array, *, rotary_values: RotaryValues, kv_cache: KVCache | None=None, model_config: ModelConfig) -> tuple[Array, KVCache | None]:
     q = op.einsum(src_seq, params.q_proj, 'B S M, M R H K -> B R H S K')
     k = op.einsum(dst_seq, params.k_proj, 'B D M, M H K -> B H D K')

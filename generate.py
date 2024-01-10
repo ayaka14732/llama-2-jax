@@ -25,9 +25,6 @@ def main(pickle_file):
     max_len = 256
 
     
-    jax.distributed.initialize()
-    jax_smi.initialise_tracking()
-    
     print('CONNECTED TPUs:', jax.device_count())
     print('LOCAL_DEVICES:', jax.local_devices())
     

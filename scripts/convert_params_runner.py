@@ -19,6 +19,9 @@ pairs = {
     'llama2-7B-chat': ('meta-llama/Llama-2-7b-chat-hf', model_config_llama2_7B),
     'llama2-13B-chat': ('meta-llama/Llama-2-13b-chat-hf', model_config_llama2_13B),
     'llama2-70B-chat': ('meta-llama/Llama-2-70b-chat-hf', model_config_llama2_70B),
+    'Orca-7B' :('microsoft/Orca-2-7b', model_config_llama2_7B),
+    'Orca-13B': ('microsoft/Orca-2-13b', model_config_llama2_13B),
+
 }
 
 def convert(target: str, save_path: str = '') -> None:

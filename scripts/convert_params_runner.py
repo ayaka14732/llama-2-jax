@@ -26,7 +26,7 @@ pairs = {
 
 def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
-    model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype= torch.float16)
+    model_pt = LlamaForCausalLM.from_pretrained(path, torch_dtype= torch.bfloat16)
     params = convert_llama(model_pt, model_config=model_config)
     del model_pt
     gc.collect()

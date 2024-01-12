@@ -7,7 +7,7 @@ import jax
 import jax.numpy as jnp
 from transformers import LlamaForCausalLM
 import gc
-from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B
+from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B, model_config_orca2_13B, model_config_orca2_7B
 from lib.llama_params import convert_llama
 from lib.param_utils import save_params
 
@@ -19,8 +19,8 @@ pairs = {
     'llama2-7B-chat': ('meta-llama/Llama-2-7b-chat-hf', model_config_llama2_7B),
     'llama2-13B-chat': ('meta-llama/Llama-2-13b-chat-hf', model_config_llama2_13B),
     'llama2-70B-chat': ('meta-llama/Llama-2-70b-chat-hf', model_config_llama2_70B),
-    'Orca-7B' :('microsoft/Orca-2-7b', model_config_llama2_7B),
-    'Orca-13B': ('microsoft/Orca-2-13b', model_config_llama2_13B),
+    'Orca-7B' :('microsoft/Orca-2-7b', model_config_orca2_7B),
+    'Orca-13B': ('microsoft/Orca-2-13b', model_config_orca2_13B),
 
 }
 

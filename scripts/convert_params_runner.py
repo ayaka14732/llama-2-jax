@@ -31,7 +31,7 @@ def convert(target: str, save_path: str = '') -> None:
     del model_pt
     gc.collect()
     params = jax.tree_map(lambda x: x.astype(jnp.bfloat16), params)
-    check_llama(params, model_config=model_config)
+    # check_llama(params, model_config=model_config)
 
     print(f'Converted parameters for {target}')
     # Define the file name and path

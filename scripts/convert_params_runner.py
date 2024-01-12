@@ -12,10 +12,10 @@ from lib.llama_params import convert_llama
 from lib.param_utils import save_params
 
 pairs = {
-    'llama1-7B': ('huggyllama/llama1-7B', model_config_llama1_7B),
-    'llama1-13B': ('huggyllama/llama1-13B', model_config_llama2_13B),
-    'llama1-30B': ('huggyllama/llama1-30B', model_config_llama1_7B),
-    'llama1-65B': ('huggyllama/llama1-65B', model_config_llama1_7B),
+    'llama1-7B': ('huggyllama/llama-7B', model_config_llama1_7B),
+    'llama1-13B': ('huggyllama/llama-13B', model_config_llama2_13B),
+    'llama1-30B': ('huggyllama/llama-30B', model_config_llama1_7B),
+    'llama1-65B': ('huggyllama/llama-65B', model_config_llama1_7B),
     'llama2-7B': ('meta-llama/Llama-2-7b-hf', model_config_llama2_7B),
     'llama2-13B': ('meta-llama/Llama-2-13b-hf', model_config_llama2_13B),
     'llama2-70B': ('meta-llama/Llama-2-70b-hf', model_config_llama2_70B),

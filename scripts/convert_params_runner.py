@@ -24,6 +24,8 @@ pairs = {
     'llama2-70B-chat': ('meta-llama/Llama-2-70b-chat-hf', model_config_llama2_70B),
     'Orca-7B' :('microsoft/Orca-2-7b', model_config_orca2_7B),
     'Orca-13B': ('microsoft/Orca-2-13b', model_config_orca2_13B),
+    'Vicuna-7B':('lmsys/vicuna-13b-v1.5-16k', model_config_llama1_7B),
+    'Vicuna-13B':('lmsys/vicuna-13b-v1.5-16k', model_config_llama2_13B),
 
 }
 

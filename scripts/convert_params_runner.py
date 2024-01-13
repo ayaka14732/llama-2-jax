@@ -13,9 +13,9 @@ from lib.param_utils import save_params
 
 pairs = {
     'llama1-7B': ('huggyllama/llama-7B', model_config_llama1_7B),
-    'llama1-13B': ('huggyllama/llama-13B', model_config_llama2_13B),
+    'llama1-13B': ('huggyllama/llama-13B', model_config_llama1_13B),
     'llama1-30B': ('huggyllama/llama-30B', model_config_llama1_30B),
-    'llama1-65B': ('huggyllama/llama-65B', model_config_llama1_7B),
+    'llama1-65B': ('huggyllama/llama-65B', model_config_llama1_30B),
     'llama2-7B': ('meta-llama/Llama-2-7b-hf', model_config_llama2_7B),
     'llama2-13B': ('meta-llama/Llama-2-13b-hf', model_config_llama2_13B),
     'llama2-70B': ('meta-llama/Llama-2-70b-hf', model_config_llama2_70B),
@@ -24,7 +24,7 @@ pairs = {
     'llama2-70B-chat': ('meta-llama/Llama-2-70b-chat-hf', model_config_llama2_70B),
     'Orca-7B' :('microsoft/Orca-2-7b', model_config_orca2_7B),
     'Orca-13B': ('microsoft/Orca-2-13b', model_config_orca2_13B),
-    'Vicuna-7B':('lmsys/vicuna-7b-v1.5-16k', model_config_llama1_7B),
+    'Vicuna-7B':('lmsys/vicuna-7b-v1.5-16k', model_config_llama2_7B),
     'Vicuna-13B':('lmsys/vicuna-13b-v1.5-16k', model_config_llama2_13B),
 
 }

@@ -70,12 +70,12 @@ model_config_llama1_13B = ModelConfig(
 )
 
 model_config_llama1_30B = ModelConfig(
-    d_ff=28672,
+    d_ff=17920,
     d_k=128,
-    d_model=8192,
+    d_model=6656,
     d_v=128,
-    n_heads_kv=8,
-    n_layers=80,
+    n_heads_kv=52,
+    n_layers=60,
     n_rep_kv=8,
     rms_norm_eps=1e-6,
     token_id_bos=1,

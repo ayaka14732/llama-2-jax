@@ -7,7 +7,7 @@ import jax
 import jax.numpy as jnp
 from transformers import LlamaForCausalLM
 import gc
-from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B, model_config_orca2_13B, model_config_orca2_7B, model_config_llama1_30B, model_config_llama1_13B
+from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B, model_config_orca2_13B, model_config_orca2_7B, model_config_llama1_30B, model_config_llama1_13B, model_config_solar_10_7B, zephyr_config_3B
 from lib.llama_params import convert_llama
 from lib.param_utils import save_params
 
@@ -26,6 +26,12 @@ pairs = {
     'Orca-13B': ('microsoft/Orca-2-13b', model_config_orca2_13B),
     'Vicuna-7B':('lmsys/vicuna-7b-v1.5-16k', model_config_llama2_7B),
     'Vicuna-13B':('lmsys/vicuna-13b-v1.5-16k', model_config_llama2_13B),
+    'SOLAR-10.7B-Instruct':('upstage/SOLAR-10.7B-Instruct-v1.0',model_config_solar_10_7B),
+    'SOLAR-10.7B':('upstage/SOLAR-10.7B-v1.0',model_config_solar_10_7B),
+    'Zephyr-3B':('stabilityai/stablelm-zephyr-3b', zephyr_config_3B),
+    'Zephyr-7B':('HuggingFaceH4/zephyr-7b-beta', model_config_llama2_7B),
+    'Mistral-7B':('mistralai/Mistral-7B-v0.1', model_config_llama2_7B),
+    'Mistral-7B-Instruct':('mistralai/Mistral-7B-Instruct-v0.1',model_config_llama2_7B),
 
 }
 
@@ -52,7 +58,7 @@ def convert(target: str, save_path: str = '') -> None:
     # Upload the file to Hugging Face
     print('Uploading to Hugging Face...')
     api = HfApi()
-    repo_id = f'divyapatel4/{target}-hf-jax'  # Define the repo_id based on the target
+    repo_id = f'divyapatel4/{target}-jax'  # Define the repo_id based on the target
     api.upload_file(
         path_or_fileobj=file_path,
         path_in_repo=file_name,

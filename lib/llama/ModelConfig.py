@@ -155,3 +155,37 @@ model_config_orca2_13B = ModelConfig(
     dropout_rate=0.1,
     return_kv_cache=False,
 )
+
+model_config_solar_10_7B = ModelConfig(
+    d_ff=14336,
+    d_k=128,
+    d_model=4096,
+    d_v=128,
+    n_heads_kv=8,
+    n_layers=48,
+    n_rep_kv=4,
+    rms_norm_eps=1e-6,
+    token_id_bos=1,
+    token_id_eos=2,
+    token_id_pad=0,
+    vocab_size=32000,
+    dropout_rate=0.1,
+    return_kv_cache=False,
+)
+
+zephyr_config_3B = ModelConfig(
+    d_ff=6912,
+    d_k=80,
+    d_model=2560,
+    d_v=80,
+    n_heads_kv=32,
+    n_layers=32,
+    n_rep_kv=1,
+    rms_norm_eps=1e-5,
+    token_id_bos=0,
+    token_id_eos=0,
+    token_id_pad=0,
+    vocab_size=50304,
+    dropout_rate=0.1,
+    return_kv_cache=True,
+)

@@ -32,7 +32,7 @@ pairs = {
     'Zephyr-7B':('HuggingFaceH4/zephyr-7b-beta', model_config_llama2_7B),
     'Mistral-7B':('mistralai/Mistral-7B-v0.1', model_config_llama2_7B),
     'Mistral-7B-Instruct':('mistralai/Mistral-7B-Instruct-v0.1',model_config_llama2_7B),
-    'Mistral-7B-Instruct':('mistralai/Mistral-7B-Instruct-v0.2',model_config_llama2_7B),
+    'Mistral-7B-Instruct-2':('mistralai/Mistral-7B-Instruct-v0.2',model_config_llama2_7B),
 
 }
 

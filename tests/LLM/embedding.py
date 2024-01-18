@@ -6,8 +6,8 @@ import torch
 import torch.nn as tnn
 
 from lib.array_utils import pt2jax
-from lib.llama import model_config_llama1_7B
-from lib.llama.embedding import forward_embedding
+from lib.LLM import model_config_llama1_7B
+from lib.LLM.embedding import forward_embedding
 
 vocab_size = 12
 d_model = 2

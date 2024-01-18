@@ -1,8 +1,8 @@
 import jax
 
-from ..llama import Llama, LlamaModel
-from ..llama.attention import Attention
-from ..llama.decoder import Decoder
+from ..LLM import Llama, LlamaModel
+from ..LLM.attention import Attention
+from ..LLM.decoder import Decoder
 from .shard_array import shard_array
 
 sharding_mp = Llama(

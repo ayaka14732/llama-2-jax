@@ -20,9 +20,9 @@ import wandb
 from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, gsm_collate_fn_train
-from lib.llama import Llama, RotaryValues, forward_llama, init_llama, make_rotary_values
-# from lib.llama import model_config_dummy as model_config
-from lib.llama import model_config_llama2_7B as model_config
+from lib.LLM import Llama, RotaryValues, forward_llama, init_llama, make_rotary_values
+# from lib.LLM import model_config_dummy as model_config
+from lib.LLM import model_config_llama2_7B as model_config
 from lib.loss import cross_entropy_loss
 from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params, save_params

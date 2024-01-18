@@ -5,7 +5,7 @@ import jax.numpy as jnp
 from transformers.models.llama.modeling_llama import LlamaRotaryEmbedding
 
 from lib.array_utils import pt2jax
-from lib.llama.rotary_embedding import _make_weights
+from lib.LLM.rotary_embedding import _make_weights
 
 batch_size = 2
 seq_len = 2048

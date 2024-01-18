@@ -7,9 +7,9 @@ from transformers.models.llama.modeling_llama import LlamaAttention, LlamaDecode
 from transformers.models.mistral.modeling_mistral import MistralAttention, MistralDecoderLayer, MistralMLP, MistralRMSNorm
 
 from ..array_utils import jax2pt
-from ..llama import Llama, LlamaModel
-from ..llama.attention import Attention
-from ..llama.decoder_block import DecoderBlock
+from ..LLM import Llama, LlamaModel
+from ..LLM.attention import Attention
+from ..LLM.decoder_block import DecoderBlock
 from ..tree_utils import unstack_leaves
 
 def convert_back_embedding(x: Array) -> tnn.Embedding:

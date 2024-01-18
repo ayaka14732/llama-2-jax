@@ -7,8 +7,8 @@ import jax
 import jax.numpy as jnp
 from transformers import LlamaForCausalLM
 import gc
-from lib.llama import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B, model_config_orca2_13B, model_config_orca2_7B, model_config_llama1_30B, model_config_llama1_13B, model_config_solar_10_7B, zephyr_config_3B
-from lib.llama_params import convert_llama
+from lib.LLM import check_llama, model_config_llama1_7B, model_config_llama2_13B, model_config_llama2_70B, model_config_llama2_7B, model_config_orca2_13B, model_config_orca2_7B, model_config_llama1_30B, model_config_llama1_13B, model_config_solar_10_7B, zephyr_config_3B
+from lib.LLM_params import convert_llama
 from lib.param_utils import save_params
 
 pairs = {

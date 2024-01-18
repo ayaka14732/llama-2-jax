@@ -20,3 +20,4 @@ if __name__ == "__main__":
     check_directory('lib')
     check_directory('tests')
     check_directory('scripts')
+

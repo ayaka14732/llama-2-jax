@@ -9,7 +9,7 @@ from tqdm import tqdm
 from lib.dataloader import LlamaDataLoader
 from lib.generation import TopPGenerationConfig, top_p
 from lib.gsm_data import GSMDataset, gsm_collate_fn_test
-from lib.llama import model_config_llama2_7B
+from lib.LLM import model_config_llama2_7B
 from lib.multihost_utils import shard_model_params
 from lib.param_utils import load_params
 from lib.proc_init_utils import initialise_tpu

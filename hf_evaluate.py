@@ -13,7 +13,7 @@ from transformers import LlamaConfig, LlamaTokenizer
 
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset
-from lib.llama_params import convert_back_llama
+from lib.LLM_params import convert_back_llama
 from lib.param_utils import load_params
 from lib.seeding import HASHED_BUDDHA
 

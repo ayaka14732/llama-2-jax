@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import jax.random as rand
 from transformers import LlamaTokenizer
 from lib.generation import generate
-from lib.llama import Llama
+from lib.LLM import Llama
 from lib.logits_processing import PresencePenaltyProcessor, TopKSampler, TopPSampler, make_logits_processor
 from lib.param_utils import load_params
 from lib.multihost_utils import shard_model_params

@@ -7,8 +7,8 @@ import torch.nn as tnn
 from transformers.models.llama.modeling_llama import LlamaRMSNorm
 
 from lib.array_utils import pt2jax
-from lib.llama import model_config_llama1_7B
-from lib.llama.rms_norm import forward_rms_norm
+from lib.LLM import model_config_llama1_7B
+from lib.LLM.rms_norm import forward_rms_norm
 
 batch_size = 2
 seq_len = 9

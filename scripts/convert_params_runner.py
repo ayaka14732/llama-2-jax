@@ -36,6 +36,7 @@ pairs = {
 
 }
 
+# Define the function to convert the parameters
 def convert(target: str, save_path: str = '') -> None:
     path, model_config = pairs[target]
     model_pt = LlamaForCausalLM.from_pretrained(path)

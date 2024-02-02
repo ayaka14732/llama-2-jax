@@ -16,7 +16,9 @@ from transformers import LlamaTokenizer
 from tqdm import tqdm
 from typing import Any, Callable
 import wandb
-
+from lib.llama import Llama, LlamaModel
+from lib.llama.attention import Attention
+from lib.llama.decoder import Decoder
 from lib.data import TrainData
 from lib.dataloader import LlamaDataLoader
 from lib.gsm_data import GSMDataset, gsm_collate_fn_train
@@ -112,6 +114,25 @@ def main() -> None:
     )
     optimizer = optax.adamw(learning_rate=schedule)
     optimizer = optax.MultiSteps(optimizer, n_accumulation_steps)
+    optimizer = optax.multi_transform(
+                    {'train': optimizer, 
+                     'freeze': optax.set_to_zero()
+                     },
+
+                    Llama(
+                        model=LlamaModel(
+                            embedding='freeze',
+                            decoder=Decoder(
+                                input_norm='freeze',
+                                attention=Attention(q_proj='train', k_proj='freeze', v_proj='freeze', out_proj='freeze'),
+                                post_attn_norm='freeze',
+                                gate_proj='freeze',
+                                up_proj='freeze',
+                                down_proj='freeze',
+                            ),
+                            norm='freeze',
+                        ),
+                        lm_head='train'))
     optimize = optimizer.update
     opt_state = optimizer.init(params)
 
